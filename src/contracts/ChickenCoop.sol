@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity >=0.6.0 <0.8.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/ERC721.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+
+//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/ERC721.sol";
+//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
 
 contract ChickenCoop is ERC721, Ownable {
     address public minter;
-    uint public totalSupply;
+    uint public supply;
 
     constructor() public ERC721("Sunflower Farmers Chicken Coop", "SFCC") {
         minter = msg.sender;
@@ -29,12 +33,16 @@ contract ChickenCoop is ERC721, Ownable {
     function mint(address account, uint256 amount) public {
         require(amount == 1);
         require(msg.sender == minter, "You are not the minter");
-        require(totalSupply < 2000, "Only 2000 coops can be minted");
+        require(supply < 2000, "Only 2000 coops can be minted");
         require(balanceOf(account) < 1 || account == minter, "A farm can only have 1 chicken coop");
 
-        uint256 tokenId = totalSupply + 1;
+        uint256 tokenId = supply + 1;
         _mint(account, tokenId);
 
-        totalSupply = totalSupply + 1;
+        supply = supply + 1;
 	}
+
+    function totalSupply() public view virtual override returns (uint256) {
+        return supply;
+    }
 }

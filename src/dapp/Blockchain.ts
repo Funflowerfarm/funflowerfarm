@@ -1,10 +1,11 @@
 import Web3 from "web3";
 
-import Token from "../abis/Token.json";
-import Farm from "../abis/Farm.json";
+import Token from "../abis/TokenV2.json";
+import Farm from "../abis/FarmV2.json";
 import CommunityCrafting from "../abis/CommunityCrafting.json";
 import Chicken from "../abis/Chicken.json";
 import QuickSwap from "../abis/QuickSwapRouter.json";
+import {deployAddresses} from "../dapp/utils/deployAddresses"
 
 import {
   Transaction,
@@ -29,6 +30,8 @@ interface Account {
   id: string;
 }
 
+const FARM_CONTRACT = deployAddresses["FarmV2"]
+const TOKEN_CONTRACT = deployAddresses["TokenV2"]
 type Contracts = Record<ItemName, any>;
 
 export const MINIMUM_GAS_PRICE = 40;
@@ -64,18 +67,19 @@ export class BlockChain {
 
   private isTrialAccount: boolean = false;
   private async connectToMatic() {
+    console.log("connecting to matic...")
     try {
       this.token = new this.web3.eth.Contract(
         Token as any,
-        "0xdf9B4b57865B403e08c85568442f95c26b7896b0"
+        TOKEN_CONTRACT
       );
       this.farm = new this.web3.eth.Contract(
         Farm as any,
-        "0x6e5Fa679211d7F6b54e14E187D34bA547c5d3fe0"
+        FARM_CONTRACT
       );
       this.chickens = new this.web3.eth.Contract(
         Chicken as any,
-        "0xf0F1Cc9192ca0064EB3D35e0DE1CE5e56572ecab"
+        deployAddresses["Chicken"]
       );
       this.quickswap = new this.web3.eth.Contract(
         QuickSwap as any,
@@ -103,11 +107,11 @@ export class BlockChain {
 
       this.alchemyToken = new this.web3.eth.Contract(
         Token as any,
-        "0xdf9B4b57865B403e08c85568442f95c26b7896b0"
+        TOKEN_CONTRACT
       );
       this.alchemyFarm = new this.web3.eth.Contract(
         Farm as any,
-        "0x6e5Fa679211d7F6b54e14E187D34bA547c5d3fe0"
+        FARM_CONTRACT
       );
     } catch (e) {
       // Timeout, retry
@@ -159,8 +163,7 @@ export class BlockChain {
       await this.setupWeb3();
       this.oldInventory = null;
       const chainId = await this.web3.eth.getChainId();
-
-      if (chainId === 137) {
+      if (chainId === 1337) {
         await this.connectToMatic();
 
         await this.loadFarm();
@@ -176,7 +179,7 @@ export class BlockChain {
         e.message !== "WRONG_CHAIN" &&
         e.message !== "NO_WEB3"
       ) {
-        console.log("Try again");
+        console.log("Try again", e);
         await new Promise((res) => setTimeout(res, 2000));
 
         return this.initialise(retryCount + 1);

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.0 <0.8.0;
 
-//import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-//import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
+/*
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.3.0/contracts/token/ERC20/ERC20.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.3.0/contracts/token/ERC20/ERC20Burnable.sol";
-
+*/
 
 contract TokenV2 is ERC20, ERC20Burnable {
   address public minter;
@@ -15,6 +15,7 @@ contract TokenV2 is ERC20, ERC20Burnable {
   event MinterChanged(address indexed from, address to);
 
   constructor() payable ERC20("Sunflower Farm", "SFF") {
+    _mint(msg.sender, 270000000000000000000);
     owner = msg.sender;
   }
 

@@ -1,3 +1,4 @@
+import {deployAddresses} from "../utils/deployAddresses"
 import Token from "../../abis/Token.json";
 import Farm from "../../abis/Farm.json";
 import Axe from "../../abis/Axe.json";
@@ -66,19 +67,19 @@ export interface Recipe extends Item {
 export interface Item {
   name:
     | "Axe"
-    | "Wood pickaxe"
+    | "Stone"
+    | "Wood"
+    /*| "Wood pickaxe"
     | "Stone Pickaxe"
     | "Iron Pickaxe"
     | "Fishing rod"
-    | "Hammer"
-    | "Stone"
-    | "Wood"
+    | "Hammer"*/
     | "Iron"
     | "Gold"
     | "Egg"
-    | "Chicken"
-    | "Sword"
-    | "Chicken coop"
+    | "Chicken"/*
+    | "Sword"*/
+    | "Chicken coop"/*
     | "Sunflower Statue"
     | "OG Potato Statue"
     | "Christmas Tree"
@@ -88,7 +89,7 @@ export interface Item {
     | "Farm Dog"
     | "Gnome"
     | "Wheat Seed"
-    | "Flour";
+    | "Flour"*/;
   description: string;
   address: string;
   image: any;
@@ -112,7 +113,7 @@ export const recipes: Recipe[] = [
     description: "Used for cutting and collecting wood",
     image: axe,
     type: "ERC20",
-    address: "0xc65C99E4c3AAb25322d4E808e5e96Ec774330696",
+    address: deployAddresses["Axe"],
     ingredients: [
       {
         name: "$SFF",
@@ -121,7 +122,7 @@ export const recipes: Recipe[] = [
       },
     ],
     abi: Axe,
-  },
+  }/*,
   {
     name: "Wood pickaxe",
     description: "Used for mining and collecting stone",
@@ -325,14 +326,14 @@ export const recipes: Recipe[] = [
       },
     ],
     supply: 50,
-  },
+  }*/,
   {
     name: "Chicken coop",
     abi: ChristmasTree,
     description: "Produce eggs 3x as fast with this stylish coop",
     image: chickenCoop,
     type: "NFT",
-    address: "0x3D422610242E66aB04069349DF9e189B90A42449",
+    address: deployAddresses["ChickenCoop"],
     ingredients: [
       {
         name: "$SFF",
@@ -360,7 +361,7 @@ export const recipes: Recipe[] = [
     description: "An animal used to produce eggs",
     image: chicken,
     type: "ERC20",
-    address: "0xf0F1Cc9192ca0064EB3D35e0DE1CE5e56572ecab",
+    address: deployAddresses["Chicken"],
     ingredients: [
       {
         name: "$SFF",
@@ -368,7 +369,7 @@ export const recipes: Recipe[] = [
         image: coin,
       },
     ],
-  },
+  },/*
   {
     name: "Golden Egg",
     abi: Chicken,
@@ -500,7 +501,7 @@ export const recipes: Recipe[] = [
         image: wheat,
       },
     ],
-  },
+  },*/
 ];
 
 export const items: Item[] = [
@@ -511,7 +512,7 @@ export const items: Item[] = [
     description: "A natural resource in Sunflower Land used for crafting",
     image: stone,
     type: "ERC20",
-    address: "0xE11e8ff4D9C10A7E4524e8fE6b4F1F3E8665eDCE",
+    address: deployAddresses["Stone"],
   },
   {
     name: "Wood",
@@ -520,7 +521,7 @@ export const items: Item[] = [
       "A bountiful resource in Sunflower Land used for crafting",
     image: wood,
     type: "ERC20",
-    address: "0xC8A6fFc3720867470A2395D1634B3085BbDDf71a",
+    address: deployAddresses["Wood"],
   },
 
   {
@@ -530,7 +531,7 @@ export const items: Item[] = [
       "A bountiful resource in Sunflower Land used for crafting",
     image: iron,
     type: "ERC20",
-    address: "0x4a114F6EC3e0f6c57A9Db37140ca88Ee5525E55B",
+    address: deployAddresses["Iron"],
   },
   {
     name: "Gold",
@@ -538,7 +539,7 @@ export const items: Item[] = [
     description: "A scarce resource in Sunflower Land used for crafting",
     image: goldOre,
     type: "ERC20",
-    address: "0xbc7B1c141218C5d7BD1BEb8098BDe5D8a1e327E6",
+    address: deployAddresses["Gold"],
   },
   {
     name: "Egg",
@@ -547,7 +548,7 @@ export const items: Item[] = [
       "A bountiful resource in Sunflower Land used for crafting",
     image: egg,
     type: "ERC20",
-    address: "0x3560B931b122fF740Db06CB5B4569A0dC5d28954",
+    address: deployAddresses["Egg"],
   },
 ];
 
@@ -556,18 +557,18 @@ export type Inventory = Record<ItemName, number>;
 export const DEFAULT_INVENTORY: Inventory = {
   Wood: 0,
   Stone: 0,
-  Axe: 0,
+  Axe: 0,/*
   "Wood pickaxe": 0,
   "Stone Pickaxe": 0,
-  "Iron Pickaxe": 0,
+  "Iron Pickaxe": 0,*/
   Iron: 0,
   Gold: 0,
   Chicken: 0,
-  Egg: 0,
+  Egg: 0,/*
   "OG Potato Statue": 0,
   "Sunflower Statue": 0,
-  "Fishing rod": 0,
-  "Chicken coop": 0,
+  "Fishing rod": 0,*/
+  "Chicken coop": 0/*,
   Hammer: 0,
   Sword: 0,
   Scarecrow: 0,
@@ -577,6 +578,6 @@ export const DEFAULT_INVENTORY: Inventory = {
   "Farm Dog": 0,
   Gnome: 0,
   "Wheat Seed": 0,
-  Flour: 0,
+  Flour: 0,*/
 };
 export type ItemName = Item["name"];
