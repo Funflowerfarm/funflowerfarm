@@ -6,11 +6,15 @@ async function deployDelay() {
   await delay(2000);
 }
 
-async function deployERC20(deployer, name) {
+async function deployERC20(deployer, name, farm) {
   const contract = artifacts.require(name);
   await deployer.deploy(contract);
   await deployDelay();
   const contractDetails = await contract.deployed();
+  if (farm) {
+    await contractDetails.passMinterRole(farm.address)
+    await deployDelay();
+  }
   return {
     out: `, "${name}": "${contractDetails.address}"`,
     contract: contractDetails
@@ -60,9 +64,19 @@ module.exports = async function (deployer) {
   await token.passMinterRole(farmContract.address);
   let out = `const deployAddresses = { "TokenV2" : "${token.address}", "FarmV2" : "${farmContract.address}"`
 
-  out += (await deployERC20(deployer, "Axe")).out
+  const axeDeploy = await deployERC20(deployer, "Axe")
+  await axeDeploy.contract.passMinterRole(farmContract.address)
+
+  farmContract.createRecipe(axeDeploy.contract.address,[{materialAddress: token.address, amount: 1}])
+  await deployDelay()
+  out += axeDeploy.out
+
   out += (await deployERC20(deployer, "Stone")).out
-  out += (await deployERC20(deployer, "Wood")).out
+  const woodDeploy = await deployERC20(deployer, "Wood", farmContract)
+  out += woodDeploy.out
+  farmContract.createResource(woodDeploy.contract.address, axeDeploy.contract.address)
+  await deployDelay()
+
   out += (await deployERC20(deployer, "Iron")).out
   out += (await deployERC20(deployer, "Gold")).out
 
@@ -75,7 +89,17 @@ module.exports = async function (deployer) {
   let chickenDeploy = await deployChicken(deployer, chickenCoopDeploy.contract.address, eggDeploy.contract.address)
   out += chickenDeploy.out
   
+  const pickAxeDeploy = await deployERC20(deployer, "PickAxe")
+  await pickAxeDeploy.contract.passMinterRole(farmContract.address)
+  out += pickAxeDeploy.out
 
+  const ironPickAxeDeploy = await deployERC20(deployer, "IronPickAxe")
+  await ironPickAxeDeploy.contract.passMinterRole(farmContract.address)
+  out += ironPickAxeDeploy.out
+
+  const stonePickAxeDeploy = await deployERC20(deployer, "StonePickAxe")
+  await stonePickAxeDeploy.contract.passMinterRole(farmContract.address)
+  out += stonePickAxeDeploy.out
 
   delay(2000)
 

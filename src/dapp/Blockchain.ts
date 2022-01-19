@@ -831,8 +831,16 @@ export class BlockChain {
     const values: Record<ItemName, number> = Object.keys(
       this.contracts
     ).reduce((itemValues, itemName, index) => {
+      const itemsForDebug = items
       const isNFT =
-        items.find((item) => item.name === itemName).type === "NFT";
+        items.find((item) => {
+          if(!item) {
+            console.log(`warn: item is null, item name ${itemName} index ${index}`);
+            return false;
+          }
+          //console.log(`item.name ${item.name} itemName ${itemName}`, item)
+          return item.name === itemName;
+        }).type === "NFT";
       const balance = itemBalances[index];
       return {
         ...itemValues,

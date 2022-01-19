@@ -69,9 +69,9 @@ export interface Item {
     | "Axe"
     | "Stone"
     | "Wood"
-    /*| "Wood pickaxe"
+    | "Wood pickaxe"
     | "Stone Pickaxe"
-    | "Iron Pickaxe"
+    | "Iron Pickaxe"/*
     | "Fishing rod"
     | "Hammer"*/
     | "Iron"
@@ -122,13 +122,13 @@ export const recipes: Recipe[] = [
       },
     ],
     abi: Axe,
-  }/*,
+  },
   {
     name: "Wood pickaxe",
     description: "Used for mining and collecting stone",
     image: woodPickaxe,
     type: "ERC20",
-    address: "0x526439FCCd9494b61F9CfaA0c287Cb04a30F2D3f",
+    address: deployAddresses["PickAxe"],
     ingredients: [
       {
         name: "Wood",
@@ -149,7 +149,7 @@ export const recipes: Recipe[] = [
     description: "Used for mining and collecting iron ore",
     image: pickaxe,
     type: "ERC20",
-    address: "0xBDc6814D29fBA97a426057778ABe702079480b80",
+    address: deployAddresses["StonePickAxe"],
     ingredients: [
       {
         name: "Wood",
@@ -174,7 +174,7 @@ export const recipes: Recipe[] = [
     description: "Used for mining and collecting gold",
     image: ironPickaxe,
     type: "ERC20",
-    address: "0x4a223dDc81F3F73eeB2Cc7E625e6013A028fae62",
+    address: deployAddresses["IronPickAxe"],
     ingredients: [
       {
         name: "Wood",
@@ -192,7 +192,7 @@ export const recipes: Recipe[] = [
         image: coin,
       },
     ],
-  },
+  },/*
   {
     name: "Hammer",
 
@@ -326,7 +326,7 @@ export const recipes: Recipe[] = [
       },
     ],
     supply: 50,
-  }*/,
+  }*/
   {
     name: "Chicken coop",
     abi: ChristmasTree,
@@ -523,7 +523,6 @@ export const items: Item[] = [
     type: "ERC20",
     address: deployAddresses["Wood"],
   },
-
   {
     name: "Iron",
     abi: Iron,
@@ -557,10 +556,10 @@ export type Inventory = Record<ItemName, number>;
 export const DEFAULT_INVENTORY: Inventory = {
   Wood: 0,
   Stone: 0,
-  Axe: 0,/*
+  Axe: 0,
   "Wood pickaxe": 0,
   "Stone Pickaxe": 0,
-  "Iron Pickaxe": 0,*/
+  "Iron Pickaxe": 0,
   Iron: 0,
   Gold: 0,
   Chicken: 0,
@@ -568,7 +567,7 @@ export const DEFAULT_INVENTORY: Inventory = {
   "OG Potato Statue": 0,
   "Sunflower Statue": 0,
   "Fishing rod": 0,*/
-  "Chicken coop": 0/*,
+  "Chicken coop": 0,/*
   Hammer: 0,
   Sword: 0,
   Scarecrow: 0,
