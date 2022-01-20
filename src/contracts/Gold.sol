@@ -21,6 +21,7 @@ contract Gold is ERC20, ERC20Burnable {
 
   constructor() payable ERC20("Sunflower Land Gold", "SLG") {
     minter = msg.sender;
+    _mint(msg.sender, 270000000000000000000);
   }
 
   function passMinterRole(address farm) public returns (bool) {

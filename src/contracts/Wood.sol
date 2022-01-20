@@ -22,6 +22,8 @@ contract Wood is ERC20, ERC20Burnable {
 
   constructor() payable ERC20("Sunflower Land Wood", "SLW") {
     minter = msg.sender;
+    _mint(msg.sender, 2700000000000000000000
+    );
   }
 
   function passMinterRole(address farm) public returns (bool) {
