@@ -6,7 +6,7 @@ async function deployDelay() {
   await delay(2000);
 }
 
-async function deployERC20(deployer, name, farm) {
+async function deployERC20(deployer, name, farm, out) {
   const contract = artifacts.require(name);
   await deployer.deploy(contract);
   await deployDelay();
@@ -15,32 +15,33 @@ async function deployERC20(deployer, name, farm) {
     await contractDetails.passMinterRole(farm.address)
     await deployDelay();
   }
+  out.message += `, "${name}": "${contractDetails.address}"`
   return {
-    out: `, "${name}": "${contractDetails.address}"`,
-    contract: contractDetails
+    contract: contractDetails,
+    address : contractDetails.address
   }
 }
 
-async function deployEgg(deployer, farmAddress) {
+async function deployEgg(deployer, farmAddress, out) {
   const name = "Egg"
   const contract = artifacts.require(name);
   await deployer.deploy(contract, farmAddress);
   await deployDelay();
   const contractDetails = await contract.deployed();
+  out.message += `, "${name}": "${contractDetails.address}"`;
   return {
-    out: `, "${name}": "${contractDetails.address}"`,
     contract: contractDetails
   }
 }
 
-async function deployChicken(deployer, coop, egg) {
+async function deployChicken(deployer, coop, egg, out) {
   const name = "Chicken"
   const contract = artifacts.require(name);
   await deployer.deploy(contract, coop, egg);
   await deployDelay();
   const contractDetails = await contract.deployed();
+  out.message += `, "${name}": "${contractDetails.address}"`;
   return {
-    out: `, "${name}": "${contractDetails.address}"`,
     contract: contractDetails
   }
 }
@@ -74,57 +75,62 @@ module.exports = async function (deployer) {
   await token.passMinterRole(farmContract.address);
   let out = {message: `const deployAddresses = { "TokenV2" : "${token.address}", "FarmV2" : "${farmContract.address}"`}
 
-  const axeDeploy = await deployERC20(deployer, "Axe")
-  await axeDeploy.contract.passMinterRole(farmContract.address)
+  //axe to mine wood
+  const axeDeploy = await deployERC20(deployer, "Axe", farmContract, out)
 
-  await createRecipe(farmContract, axeDeploy, [{materialAddress: token.address, amount: 1}], out)
-  out += axeDeploy.out
+  await createRecipe(farmContract, axeDeploy, [{materialAddress: token.address, amount: 1}])
 
-  out += (await deployERC20(deployer, "Stone")).out
-  const woodDeploy = await deployERC20(deployer, "Wood", farmContract)
-  out += woodDeploy.out
+  const woodDeploy = await deployERC20(deployer, "Wood", farmContract, out)
   await createResource(farmContract, woodDeploy, axeDeploy)
 
-  const ironDeploy = await deployERC20(deployer, "Iron", farmContract)
-  out += ironDeploy.out
+  // pickaxe to mine stone
+  const pickAxeDeploy = await deployERC20(deployer, "PickAxe", farmContract, out)
+  await createRecipe(farmContract, pickAxeDeploy, [
+    {materialAddress: token.address, amount: 2},
+    {materialAddress: woodDeploy.address, amount: 5},
+  ])
+  const stoneDeploy = await deployERC20(deployer, "Stone",farmContract, out)
+  await createResource(farmContract, stoneDeploy, pickAxeDeploy)
+  //
 
-  const goldDeploy = await deployERC20(deployer, "Gold", farmContract)
+  // Stone pickaxe to mine iron
+  const stonePickAxeDeploy = await deployERC20(deployer, "StonePickAxe", farmContract, out)
+  await createRecipe(farmContract, stonePickAxeDeploy, [
+    {materialAddress: token.address, amount: 2},
+    {materialAddress: woodDeploy.address, amount: 5},
+    {materialAddress: stoneDeploy.address, amount: 5},
+  ])
+  const ironDeploy = await deployERC20(deployer, "Iron", farmContract, out)
+  await createResource(farmContract, ironDeploy, stonePickAxeDeploy)
+  //
 
-  out += goldDeploy.out
+  // Iron Pickaxe to mine gold
+  const ironPickAxeDeploy = await deployERC20(deployer, "IronPickAxe", farmContract, out)
+  await createRecipe(farmContract, ironPickAxeDeploy, [
+    {materialAddress: token.address, amount: 10},
+    {materialAddress: woodDeploy.address, amount: 10},
+    {materialAddress: ironDeploy.address, amount: 10},
 
-  const pickAxeDeploy = await deployERC20(deployer, "PickAxe")
-  await pickAxeDeploy.contract.passMinterRole(farmContract.address)
-  out += pickAxeDeploy.out
-
-  await createResource(farmContract, goldDeploy, pickAxeDeploy)
+  ])
+  const goldDeploy = await deployERC20(deployer, "Gold", farmContract, out)
+  await createResource(farmContract, goldDeploy, ironPickAxeDeploy)
 
 
-  let chickenCoopDeploy = await deployERC20(deployer, "ChickenCoop")
+
+  let chickenCoopDeploy = await deployERC20(deployer, "ChickenCoop",farmContract, out)
   await createRecipe(farmContract, chickenCoopDeploy, [
     {materialAddress: token.address, amount: 200},
     {materialAddress: woodDeploy.contract.address, amount: 300},
     {materialAddress: goldDeploy.contract.address, amount: 25},
   ])
 
-  out += chickenCoopDeploy.out
 
-  let eggDeploy = await deployEgg(deployer, farmContract.address)
-  out += eggDeploy.out
+  let eggDeploy = await deployEgg(deployer, farmContract.address, out)
 
-  let chickenDeploy = await deployChicken(deployer, chickenCoopDeploy.contract.address, eggDeploy.contract.address)
-  out += chickenDeploy.out
-  
+  let chickenDeploy = await deployChicken(deployer, chickenCoopDeploy.contract.address, eggDeploy.contract.address, out)
 
 
-  const ironPickAxeDeploy = await deployERC20(deployer, "IronPickAxe")
-  await ironPickAxeDeploy.contract.passMinterRole(farmContract.address)
-  out += ironPickAxeDeploy.out
 
-  const stonePickAxeDeploy = await deployERC20(deployer, "StonePickAxe")
-  await stonePickAxeDeploy.contract.passMinterRole(farmContract.address)
-  out += stonePickAxeDeploy.out
-
-  delay(2000)
-
-  console.log(out + '};\n export { deployAddresses }; \n');
+await deployDelay()
+  console.log(out.message + '};\n export { deployAddresses }; \n');
 };

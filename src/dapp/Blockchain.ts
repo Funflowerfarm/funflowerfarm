@@ -6,6 +6,7 @@ import CommunityCrafting from "../abis/CommunityCrafting.json";
 import Chicken from "../abis/Chicken.json";
 import QuickSwap from "../abis/QuickSwapRouter.json";
 import {deployAddresses} from "../dapp/utils/deployAddresses"
+import {MigrateBackendToken, MigrateBackendFarm, MigrateBackendItem} from "./MigrateBackend"
 
 import {
   Transaction,
@@ -69,14 +70,14 @@ export class BlockChain {
   private async connectToMatic() {
     console.log("connecting to matic...")
     try {
-      this.token = new this.web3.eth.Contract(
+      this.token = MigrateBackendToken( new this.web3.eth.Contract(
         Token as any,
         TOKEN_CONTRACT
-      );
-      this.farm = new this.web3.eth.Contract(
+      ));
+      this.farm = MigrateBackendFarm( new this.web3.eth.Contract(
         Farm as any,
         FARM_CONTRACT
-      );
+      ));
       this.chickens = new this.web3.eth.Contract(
         Chicken as any,
         deployAddresses["Chicken"]
@@ -97,22 +98,22 @@ export class BlockChain {
         .reduce(
           (contracts, item) => ({
             ...contracts,
-            [item.name]: new this.web3.eth.Contract(
+            [item.name]: MigrateBackendItem(new this.web3.eth.Contract(
               item.abi as any,
               item.address
-            ),
+            )),
           }),
           {} as Contracts
         );
-
-      this.alchemyToken = new this.web3.eth.Contract(
+      this.alchemyToken = MigrateBackendToken(new this.web3.eth.Contract(
         Token as any,
         TOKEN_CONTRACT
-      );
-      this.alchemyFarm = new this.web3.eth.Contract(
+      ));
+
+      this.alchemyFarm = MigrateBackendFarm(new this.web3.eth.Contract(
         Farm as any,
         FARM_CONTRACT
-      );
+      ));
     } catch (e) {
       // Timeout, retry
       if (e.code === "-32005") {
@@ -124,6 +125,8 @@ export class BlockChain {
       }
     }
   }
+
+
 
   public get isConnected() {
     return this.isTrial || !!this.farm;
