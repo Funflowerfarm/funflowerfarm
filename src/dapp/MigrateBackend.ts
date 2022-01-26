@@ -1,60 +1,35 @@
+import { EventEmitter } from "stream";
+
 const axios = require('axios');
+const Web3PromiEvent = require('web3-core-promievent')
 
 axios.defaults.baseURL = 'https://64kfdvk6me.execute-api.us-west-1.amazonaws.com';
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-axios.post('/prod/farm-game/token', {
-    firstName: 'Fred',
-    lastName: 'Flintstone'
-  })
-  .then(function (response) {
-    console.log('RESPONSE', response);
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
-
-/*function  MigrateBackendToken(tokenContract: any) : any {
-    const methods  = Object.keys(tokenContract.methods)
-    methods.forEach(m => {
-      // example returns "270059999999999999800"
-      tokenContract.methods["!balanceOf"] = function(account) {
-        const call = async function () {
-          return "270059999999999999800";
-        }
-        return {
-          call: call
-        }
-      }
-      const allow:Array<string> = Array.of("balanceOf")
-      if(allow.includes(m)) {
-        return
-      }
-      tokenContract.methods[m] = function() {console.log(`${m} not implemented`)}
-    })
-    return tokenContract;
-  }*/
 
   function  MigrateBackendToken(tokenContract: any) : any {
+    function balanceOf(args) {
+        return axios.post('/prod/farm-game/token', {
+            firstName: 'Fred',
+            lastName: 'Flintstone'
+          })
+          .then(function (response) {
+            return new Promise(function(resolve, reject) {
+                 resolve(response.data.body);
+              });
+          })
+    }
+
     const methods  = Object.keys(tokenContract.methods)
     methods.forEach(m => {
-
-        function balanceOf(args) {
-            return axios.post('/prod/farm-game/token', {
-                firstName: 'Fred',
-                lastName: 'Flintstone'
-              })
-              .then(function (response) {
-                return new Promise(function(resolve, reject) {
-                     resolve(response.data.body);
-                  });
-              })
-        }
       const proxy = new Proxy(tokenContract.methods[m], {
         apply(target, thisArg, args) {
             console.log(`MigrateBackendToken function ${m}`, args)
+
+            // get the method *.methods.balanceOf for example
             const result = target(...args)
-            //
+
+            // then *.methods.balanceOf.call
             const resultProxyCall = new Proxy(result.call, {
                 apply(target, thisArg, args) {
                     let result = null
@@ -77,22 +52,33 @@ axios.post('/prod/farm-game/token', {
   }
 
   function  MigrateBackendFarm(tokenContract: any) : any {
+    function createFarm(args) {
+        const postPromise =  axios.post('/prod/farm-game/farm', {
+            method: 'createFarm',
+            address: args[0].from
+          });
+        const promi = Web3PromiEvent()
+        postPromise.then(function() {
+          console.log('create farm promise', postPromise)
+          promi.eventEmitter.emit("receipt", { myReceipt : {}})
+        })
+        return promi.eventEmitter;
+
+    }
+
+    function getLand(m, args) {
+      return axios.post('/prod/farm-game/farm', {
+          method: m,
+          address: args[0].from
+        }).then( r => {
+          return new Promise(async (resolve, reject) => {
+            resolve(r.data.body)
+          })
+        })
+  }
     const methods  = Object.keys(tokenContract.methods)
     methods.forEach(m => {
         /*
-      // example returns "270059999999999999800"
-      tokenContract.methods["!balanceOf"] = function(account) {
-        const call = async function () {
-          return "270059999999999999800";
-        }
-        return {
-          call: call
-        }
-      }
-      const allow:Array<string> = Array.of("getLand")
-      if(allow.includes(m)) {
-        return
-      }
       tokenContract.methods[m] = function() {console.log(`${m} not implemented`)}*/
       const proxy = new Proxy(tokenContract.methods[m], {
         apply(target, thisArg, args) {
@@ -102,12 +88,39 @@ axios.post('/prod/farm-game/token', {
             const resultProxyCall = new Proxy(result.call, {
                 apply(target, thisArg, args) {
                     //console.log(`MigrateBackendFarm call ${target} ${m}`, args)
-                    const result = target(...args)
+                    let result = null
+                    if (m === 'getLand') {
+                        result = getLand(m, args)
+                    } else {
+                        result = target(...args)
+                    }
                     console.log(`result MigrateBackendFarm call ${m}`, result)
                     return result;
                 }
               });
+
               result.call = resultProxyCall
+
+              const resultProxySend = new Proxy(result.send, {
+                apply(target, thisArg, sendArgs) {
+                    //console.log(`MigrateBackendFarm send ${target} ${m}`, args)
+                    let result = null
+                    if (m === 'createFarm') {
+                        result = createFarm(sendArgs);
+                    } else {
+                        result = target(...sendArgs)
+                    }
+                    console.log(`result MigrateBackendFarm send ${m}`, result)
+                    /*resultProxySend.on = new Proxy(resultProxySend.on, {
+                      apply(onFunctionTarget, onFunctionThis, onFunctionArgs) {
+                        debugger;
+                      }
+                    })*/
+                    return result;
+                }
+              });
+
+              result.send = resultProxySend
             //
             //console.log(`result MigrateBackendFarm ${m}` , result)
             return result;
