@@ -1,0 +1,20 @@
+{
+  "name": "farm-game",
+  "version": "1.0.0",
+  "description": "farm game api",
+  "main": "index.js",
+  "repository": "",
+  "author": "nfmelendez",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.1064.0",
+    "big-number": "^2.0.0"
+  },
+  "scripts": {
+    "test": "mocha tests/unit/"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.3"
+  }
+}
