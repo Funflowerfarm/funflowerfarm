@@ -1,7 +1,19 @@
 
 
 const repo = require('./repository');
-var BigNumber = require('big-number');
+const BigNumber = require("bignumber.js");
+const { syncBuiltinESMExports } = require('module');
+
+const Fruit = {
+    None: "0",
+    Sunflower: "1",
+    Potato: "2",
+    Pumpkin: "3",
+    Beetroot: "4",
+    Cauliflower: "5",
+    Parsnip: "6",
+    Radish: "7",
+  }
 
 
 function provideHandle(repository) {
@@ -9,21 +21,29 @@ function provideHandle(repository) {
         
         if (event.method === 'getLand') {
             const address = event.address;
-            const result = await repository.getLand(address)
-            const response = {
-                statusCode: 200,
-                body:result.Item.farm.land,
-            };
-            return response;
+            const result = await repository.getFarm(address)
+            if (result.Item) {
+                const response = {
+                    statusCode: 200,
+                    body:result.Item.farm.land,
+                };
+                return response;
+            } else {
+                const response = {
+                    statusCode: 200,
+                    body: [],
+                };
+                return response;
+            }
         } else if (event.method === 'createFarm') {
             const address = event.address;
             
             const empty = {
-                fruit: 'None',
+                fruit: Fruit['None'],
                 createdAt: 0
             };
             const sunflower = {
-                fruit: 'Sunflower',
+                fruit: Fruit['Sunflower'],
                 createdAt: 0
             };
             const land = []
@@ -36,7 +56,9 @@ function provideHandle(repository) {
             
             const newFarm = {
                 land: land,
-                balance: BigNumber(0)
+                inventory : {
+                    balance: BigNumber(127).times(BigNumber(10).pow(18)).toString()  
+                }
             }
             
             await repository.createFarm(address, newFarm)
@@ -46,6 +68,17 @@ function provideHandle(repository) {
                 body: [],
             };
             return response;
+        } else if (event.method === 'token/balanceOf') {
+            const address = event.address;
+            const result = await repository.getFarm(address)
+            const balance = result.Item.farm.inventory.balance
+            const response = {
+                statusCode: 200,
+                body: balance,
+            };
+            return response;
+        } else if (event.method === 'sync') {
+            return sync(event);
         } else {
             const response = {
                 statusCode: 200,
@@ -55,6 +88,12 @@ function provideHandle(repository) {
         }
     };
 };
+
+
+function sync (event) {
+    console.log("sync")
+    
+}
 
 exports.handler = provideHandle(repo);
 exports.provideHandle = provideHandle;

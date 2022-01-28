@@ -8,7 +8,7 @@ const farmGameTable = 'farm-game';
 
 const farmPrimaryKey = 'farm-game/Farm';
 
-exports.getLand = async function (address) {
+exports.getFarm = async function (address) {
     return dynamo
     .get({
       TableName: farmGameTable,

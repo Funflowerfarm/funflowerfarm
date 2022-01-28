@@ -9,9 +9,9 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 
   function  MigrateBackendToken(tokenContract: any) : any {
     function balanceOf(args) {
-        return axios.post('/prod/farm-game/token', {
-            firstName: 'Fred',
-            lastName: 'Flintstone'
+        return axios.post('/prod/farm-game/farm', {
+            address: args[0].from,
+            method: 'token/balanceOf'
           })
           .then(function (response) {
             return new Promise(function(resolve, reject) {
