@@ -3,7 +3,9 @@ import { EventEmitter } from "stream";
 const axios = require('axios');
 const Web3PromiEvent = require('web3-core-promievent')
 
-axios.defaults.baseURL = 'https://64kfdvk6me.execute-api.us-west-1.amazonaws.com';
+//axios.defaults.baseURL = 'https://64kfdvk6me.execute-api.us-west-1.amazonaws.com';
+axios.defaults.baseURL = 'http://localhost:3001';
+
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 
@@ -52,8 +54,28 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
   }
 
   function  MigrateBackendFarm(tokenContract: any) : any {
+
+    function sendPostWithPromi(sendArgs, method, args) {
+      const postPromise =  axios.post('/prod/farm-game/farm', {...{
+        method: method,
+        address: sendArgs[0].from
+      }, ...args});
+      const promi = Web3PromiEvent()
+      postPromise.then(function() {
+        console.log(`create ${method} promise`, postPromise)
+        promi.eventEmitter.emit("receipt", { myReceipt : {}})
+      })
+      return promi.eventEmitter;
+    }
+
+    function levelUp(args) {
+
+       return sendPostWithPromi(args, 'levelUp', {})
+    }
+
     function createFarm(args) {
-        const postPromise =  axios.post('/prod/farm-game/farm', {
+      /*
+        const postPromise =  axios.post('/prod/farm-game/farm', 
             method: 'createFarm',
             address: args[0].from
           });
@@ -63,8 +85,24 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
           promi.eventEmitter.emit("receipt", { myReceipt : {}})
         })
         return promi.eventEmitter;
-
+        */
+       return sendPostWithPromi(args, 'createFarm', {})
     }
+
+    function sync(args, sendArgs) {
+      /*
+      const postPromise =  axios.post('/prod/farm-game/farm', {
+          method: 'sync',
+          address: args[0].from
+        });
+      const promi = Web3PromiEvent()
+      postPromise.then(function() {
+        console.log('create sync promise', postPromise)
+        promi.eventEmitter.emit("receipt", { myReceipt : {}})
+      })*/
+      return sendPostWithPromi(sendArgs, 'sync', {actions: args[0]})
+    }
+
 
     function getLand(m, args) {
       return axios.post('/prod/farm-game/farm', {
@@ -107,6 +145,10 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                     let result = null
                     if (m === 'createFarm') {
                         result = createFarm(sendArgs);
+                    } else if (m === 'sync') {
+                        result = sync(args, sendArgs);
+                    } else if (m === 'levelUp') {
+                      result = levelUp(sendArgs);
                     } else {
                         result = target(...sendArgs)
                     }

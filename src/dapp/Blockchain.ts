@@ -230,7 +230,6 @@ export class BlockChain {
     const farm = await this.farm.methods
       .getLand(this.account)
       .call({ from: this.account });
-debugger;
     if (!farm || !farm.length) {
       await this.waitForFarm(retryCount + 1);
     }

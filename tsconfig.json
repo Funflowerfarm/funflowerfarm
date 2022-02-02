@@ -22,5 +22,5 @@
     "src/dapp/components/modals/Creating.tsx",
     "src/dapp/components/modals/Saving.tsx"
   ],
-  "exclude": ["node_modules", "build", "cache", "artifacts"]
+  "exclude": ["node_modules", "build", "cache", "artifacts", "aws-lambda"]
 }
