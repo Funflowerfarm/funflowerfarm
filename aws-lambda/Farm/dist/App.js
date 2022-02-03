@@ -26,6 +26,8 @@ app.post('/prod/farm-game/farm', function (req, res) {
     });
 });
 app.listen(port, function () {
+    process.env['AWS_ACCESS_KEY_ID'] = 'AKIASXZ3APWM7CLXODHH';
+    process.env['AWS_SECRET_ACCESS_KEY'] = 'RVVA7KAqUV4bQe5d44Rkjkfrj5veslK+yWcKJqpN';
     console.log("Example app listening on port ".concat(port));
 });
 module.exports = {};

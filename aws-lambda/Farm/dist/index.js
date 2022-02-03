@@ -40,6 +40,7 @@ var repository_1 = require("./repository");
 var bignumber_js_1 = require("bignumber.js");
 var farm_1 = require("./farm");
 var luxon_1 = require("luxon");
+var crafting_1 = require("./crafting");
 function provideHandle(repository) {
     var _this = this;
     return function (event) { return __awaiter(_this, void 0, void 0, function () {
@@ -66,7 +67,7 @@ function provideHandle(repository) {
                         };
                         return [2 /*return*/, response];
                     }
-                    return [3 /*break*/, 6];
+                    return [3 /*break*/, 8];
                 case 2:
                     if (!(event.method === 'createFarm')) return [3 /*break*/, 3];
                     return [2 /*return*/, createFarm(event, repository)];
@@ -86,8 +87,15 @@ function provideHandle(repository) {
                     };
                     return [2 /*return*/, response];
                 case 5:
+                    if (!(event.method === 'totalSupply')) return [3 /*break*/, 7];
+                    return [4 /*yield*/, totalSupply(repository)];
+                case 6: return [2 /*return*/, _a.sent()];
+                case 7:
                     if (event.method === 'sync') {
                         return [2 /*return*/, sync(event, repository)];
+                    }
+                    else if (event.method === 'craft') {
+                        return [2 /*return*/, craft(event, repository)];
                     }
                     else if (event.method === 'levelUp') {
                         return [2 /*return*/, levelUp(event, repository)];
@@ -99,13 +107,30 @@ function provideHandle(repository) {
                         };
                         return [2 /*return*/, response];
                     }
-                    _a.label = 6;
-                case 6: return [2 /*return*/];
+                    _a.label = 8;
+                case 8: return [2 /*return*/];
             }
         });
     }); };
 }
 ;
+function totalSupply(repo) {
+    return __awaiter(this, void 0, void 0, function () {
+        var supply, response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, repo.totalSupply()];
+                case 1:
+                    supply = _a.sent();
+                    response = {
+                        statusCode: 200,
+                        body: supply,
+                    };
+                    return [2 /*return*/, response];
+            }
+        });
+    });
+}
 function getSeedPrice(_fruit) {
     var decimals = new bignumber_js_1.BigNumber(18);
     if (_fruit == farm_1.Fruit.Sunflower) {
@@ -506,3 +531,65 @@ function nowInSeconds() {
 }
 exports.handler = provideHandle(new repository_1.Repository());
 exports.provideHandle = provideHandle;
+function craft(event, repository) {
+    return __awaiter(this, void 0, void 0, function () {
+        var address, resource, amount, safeAmount, recipe, farm, inventory, i, ing, name_1, amountResource, cost, balanceAfterSpent, current, updated, response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    debugger;
+                    address = event.address, resource = event.resource, amount = event.amount;
+                    safeAmount = new bignumber_js_1.BigNumber(amount).dividedBy(new bignumber_js_1.BigNumber(10).pow(18));
+                    recipe = crafting_1.recipes.find(function (r) { return r.address === resource; });
+                    if (!recipe) return [3 /*break*/, 3];
+                    return [4 /*yield*/, repository.getFarm(address)];
+                case 1:
+                    farm = _a.sent();
+                    inventory = farm.inventory;
+                    for (i = 0; i < recipe.ingredients.length; i++) {
+                        ing = recipe.ingredients[i];
+                        name_1 = ing.name;
+                        if (name_1 == "$SFF") {
+                            name_1 = "balance";
+                        }
+                        if (inventory[name_1]) {
+                            amountResource = new bignumber_js_1.BigNumber(inventory[name_1]);
+                            cost = new bignumber_js_1.BigNumber(ing.amount).multipliedBy(new bignumber_js_1.BigNumber(10).pow(18)).multipliedBy(safeAmount);
+                            console.log("ingredient ".concat(name_1, " cost ").concat(cost.toString(), " in inventory ").concat(amountResource.toString()));
+                            if (amountResource.gte(cost)) {
+                                balanceAfterSpent = amountResource.minus(cost);
+                                inventory[name_1] = balanceAfterSpent.toString();
+                            }
+                            else {
+                                throw new Error("NOT ENOUGH " + name_1 + ' cost ' + cost.toString());
+                            }
+                        }
+                        else {
+                            throw new Error("NO BALANCE " + name_1);
+                        }
+                    }
+                    //add resource
+                    if (inventory[recipe.name]) {
+                        current = new bignumber_js_1.BigNumber(inventory[recipe.name]);
+                        updated = current.plus(amount);
+                        inventory[recipe.name] = updated.toString();
+                    }
+                    else {
+                        inventory[recipe.name] = amount;
+                    }
+                    return [4 /*yield*/, repository.saveFarm(address, farm)];
+                case 2:
+                    _a.sent();
+                    response = {
+                        statusCode: 200,
+                        body: [],
+                    };
+                    return [2 /*return*/, response];
+                case 3: throw new Error("NO_RECIPE");
+                case 4:
+                    console.log("craft event", event);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}

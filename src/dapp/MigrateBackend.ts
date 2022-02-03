@@ -22,6 +22,16 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
           })
     }
 
+      function totalSupply(m, args) {
+    return axios.post('/prod/farm-game/farm', {
+        method: m
+      }).then( r => {
+        return new Promise(async (resolve, reject) => {
+          resolve(r.data.body)
+        })
+      })
+}
+
     const methods  = Object.keys(tokenContract.methods)
     methods.forEach(m => {
       const proxy = new Proxy(tokenContract.methods[m], {
@@ -37,6 +47,8 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                     let result = null
                     if (m === 'balanceOf') {
                         result = balanceOf(args)
+                    } else if (m === 'totalSupply') {
+                      result = totalSupply(m, args)
                     } else {
                         result = target(...args)
                     }
@@ -90,17 +102,16 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
     }
 
     function sync(args, sendArgs) {
-      /*
-      const postPromise =  axios.post('/prod/farm-game/farm', {
-          method: 'sync',
-          address: args[0].from
-        });
-      const promi = Web3PromiEvent()
-      postPromise.then(function() {
-        console.log('create sync promise', postPromise)
-        promi.eventEmitter.emit("receipt", { myReceipt : {}})
-      })*/
       return sendPostWithPromi(sendArgs, 'sync', {actions: args[0]})
+    }
+
+    function craft(args, sendArgs) {
+      const resource = args[0]
+      let amount = '1000000000000000000'
+      if (args.length == 2) {
+        amount = args[1]
+      }
+      return sendPostWithPromi(sendArgs, 'craft', {resource: resource, amount: amount})
     }
 
 
@@ -114,6 +125,9 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
           })
         })
   }
+
+
+
     const methods  = Object.keys(tokenContract.methods)
     methods.forEach(m => {
         /*
@@ -144,13 +158,15 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                     //console.log(`MigrateBackendFarm send ${target} ${m}`, args)
                     let result = null
                     if (m === 'createFarm') {
-                        result = createFarm(sendArgs);
+                      result = createFarm(sendArgs);
+                    } else if (m === 'craft') {
+                      result = craft(args, sendArgs);
                     } else if (m === 'sync') {
-                        result = sync(args, sendArgs);
+                      result = sync(args, sendArgs);
                     } else if (m === 'levelUp') {
                       result = levelUp(sendArgs);
                     } else {
-                        result = target(...sendArgs)
+                      result = target(...sendArgs)
                     }
                     console.log(`result MigrateBackendFarm send ${m}`, result)
                     /*resultProxySend.on = new Proxy(resultProxySend.on, {

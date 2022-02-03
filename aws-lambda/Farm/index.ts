@@ -5,6 +5,8 @@ import {BigNumber} from 'bignumber.js';
 import {Farm, Square, Fruit, UserAction, Action} from './farm';
 import { DateTime } from 'luxon'
 
+import {Ingredient, Recipe, recipes} from './crafting'
+
 
 
 function provideHandle(repository: Repository) {
@@ -41,8 +43,12 @@ function provideHandle(repository: Repository) {
                 body: balance,
             };
             return response;
+        } else if (event.method === 'totalSupply') {
+            return await  totalSupply(repository);
         } else if (event.method === 'sync') {
             return sync(event, repository);
+        } else if (event.method === 'craft') {
+            return craft(event, repository);
         } else if (event.method === 'levelUp') {
             return levelUp(event, repository);
         } else {
@@ -55,7 +61,14 @@ function provideHandle(repository: Repository) {
     };
 };
 
-
+async function totalSupply(repo:Repository) {
+    const supply = await repo.totalSupply()
+    const response = {
+        statusCode: 200,
+        body: supply,
+    };
+    return response;
+}
 
 function getSeedPrice(_fruit: Fruit): BigNumber {
     const decimals = new BigNumber(18)
@@ -456,3 +469,55 @@ function nowInSeconds(): number {
 
 exports.handler = provideHandle(new Repository());
 exports.provideHandle = provideHandle;
+
+async function craft(event: any, repository: Repository) {
+    const {address, resource, amount} = event;
+
+    const safeAmount =  new BigNumber(amount).dividedBy(new BigNumber(10).pow(18));
+
+    const recipe:Recipe = recipes.find( r => r.address === resource)
+    if (recipe) {
+        const farm:Farm = await repository.getFarm(address)
+        const inventory = farm.inventory
+        for (let i = 0; i < recipe.ingredients.length; i++) {
+            const ing:Ingredient = recipe.ingredients[i]
+            let name = ing.name
+            if (name == "$SFF") {
+                name = "balance"
+            }
+            if (inventory[name]) {
+                const amountResource = new BigNumber(inventory[name])
+                const cost = new BigNumber(ing.amount).multipliedBy(new BigNumber(10).pow(18)).multipliedBy(safeAmount)
+                console.log(`ingredient ${name} cost ${cost.toString()} in inventory ${amountResource.toString()}`)
+                if (amountResource.gte(cost)) {
+                    const balanceAfterSpent = amountResource.minus(cost)
+                    inventory[name] = balanceAfterSpent.toString()
+                } else {
+                    throw new Error("NOT ENOUGH " + name + ' cost ' + cost.toString())
+                }
+            } else {
+                throw new Error("NO BALANCE " + name)
+            }
+        }
+        //add resource
+        if (inventory[recipe.name]) {
+            const current = new BigNumber(inventory[recipe.name])
+            const updated = current.plus(amount)
+            inventory[recipe.name] = updated.toString()
+        } else {
+            inventory[recipe.name] = amount
+        }
+        await repository.saveFarm(address, farm)
+        const response = {
+            statusCode: 200,
+            body: [],
+        };
+        return response;
+
+    } else {
+        throw new Error("NO_RECIPE")
+    }
+
+    console.log("craft event", event)
+}
+
