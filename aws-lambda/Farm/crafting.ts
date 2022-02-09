@@ -1,3 +1,4 @@
+//backend
 import {deployAddresses} from "./utils/deployAddresses"
 const Token = "../../abis/Token.json";
 const Farm = "../../abis/Farm.json";
@@ -106,6 +107,7 @@ export interface Item {
   farmLevel?: number;
   abi?: any;
   openSeaLink?: string;
+  stake?(string): string;
 }
 
 export const recipes: Recipe[] = [
@@ -513,7 +515,7 @@ export const items: Item[] = [
     description: "A natural resource in Sunflower Land used for crafting",
     image: stone,
     type: "ERC20",
-    address: deployAddresses["Stone"],
+    address: deployAddresses["Stone"]
   },
   {
     name: "Wood",

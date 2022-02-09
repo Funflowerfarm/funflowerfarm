@@ -1,62 +1,79 @@
 
 
 import { Repository } from './repository';
+import { Staker } from './staker';
 import {BigNumber} from 'bignumber.js';
 import {Farm, Square, Fruit, UserAction, Action} from './farm';
 import { DateTime } from 'luxon'
 
-import {Ingredient, Recipe, recipes} from './crafting'
+import {Ingredient, Recipe, recipes, items} from './crafting'
 
 
 
-function provideHandle(repository: Repository) {
+function provideHandle(repository: Repository, staker: Staker) {
     return async (event) => {
-        
-        if (event.method === 'getLand') {
-            const address = event.address;
-            const farm = await repository.getFarm(address)
-            if (farm) {
+        try {
+            if (event.method === 'getLand') {
+                const address = event.address;
+                const farm = await repository.getFarm(address)
+                if (farm) {
+                    const response = {
+                        statusCode: 200,
+                        body:farm.land,
+                    };
+                    return response;
+                } else {
+                    const response = {
+                        statusCode: 200,
+                        body: [],
+                    };
+                    return response;
+                }
+            } else if (event.method === 'createFarm') {
+
+                return createFarm(event, repository);
+            } else if (event.method === 'token/balanceOf') {
+                const address = event.address;
+                const farm: Farm = await repository.getFarm(address)
+                let balance = '0'
+                if (farm) {
+                balance = farm.inventory.balance
+                }
                 const response = {
                     statusCode: 200,
-                    body:farm.land,
+                    body: balance,
                 };
                 return response;
+            } else if (event.method === 'totalSupply') {
+                return await  totalSupply(repository);
+            } else if (event.method === 'sync') {
+                return sync(event, repository);
+            } else if (event.method === 'itemBalanceOf') {
+                return itemBalanceOf(event, repository);
+            } else if (event.method === 'craft') {
+                return craft(event, repository);
+            } else if (event.method === 'levelUp') {
+                return levelUp(event, repository);
+            } else if (event.method === 'itemTotalSupply') {
+                return itemTotalSupply(event, repository);
+            } else if (event.method === 'stake') {
+                const address: string = event.address
+                const resource: string = event.resource
+                const amount: string = event.amount
+                return staker.stake(address, resource, amount)
             } else {
                 const response = {
                     statusCode: 200,
-                    body: [],
+                    body: `Not known method ${event.method}`,
                 };
-                return response;
+                return response;   
             }
-        } else if (event.method === 'createFarm') {
-
-            return createFarm(event, repository);
-        } else if (event.method === 'token/balanceOf') {
-            const address = event.address;
-            const farm: Farm = await repository.getFarm(address)
-            let balance = '0'
-            if (farm) {
-             balance = farm.inventory.balance
-            }
+        } catch (e){
             const response = {
-                statusCode: 200,
-                body: balance,
+                statusCode: 500,
+                body: e.Message,
             };
-            return response;
-        } else if (event.method === 'totalSupply') {
-            return await  totalSupply(repository);
-        } else if (event.method === 'sync') {
-            return sync(event, repository);
-        } else if (event.method === 'craft') {
-            return craft(event, repository);
-        } else if (event.method === 'levelUp') {
-            return levelUp(event, repository);
-        } else {
-            const response = {
-                statusCode: 200,
-                body: `Not known method ${event.method}`,
-            };
-            return response;   
+            return response;  
         }
     };
 };
@@ -286,33 +303,6 @@ function getLandPrice(landSize: number) :BigNumber {
 }
 
 async function levelUp (event, repository:Repository) {
-    /*
-          require(fields[msg.sender].length <= 17, "MAX_LEVEL");
-
-        
-        Square[] storage land = fields[msg.sender];
-
-        uint price = getLandPrice(land.length);
-        uint fmcPrice = getMarketPrice(price);
-        uint balance = token.balanceOf(msg.sender);
-
-        require(balance >= fmcPrice, "INSUFFICIENT_FUNDS");
-        
-        // Store rewards in the Farm Contract to redistribute
-        token.transferFrom(msg.sender, address(this), fmcPrice);
-        
-        // Add 3 sunflower fields in the new fields
-        Square memory sunflower = Square({
-            fruit: Fruit.Sunflower,
-            // Make them immediately harvestable in case they spent all their tokens
-            createdAt: 0
-        });
-
-        for (uint index = 0; index < 3; index++) {
-            land.push(sunflower);
-        }
-
-        emit FarmSynced(msg.sender);*/
 
     const address = event.address
     const farm:Farm = await repository.getFarm(address)
@@ -376,7 +366,7 @@ async function sync (event, repository:Repository) {
 
         if (act.action == Action.Plant) {
             if (farm.land.length < requiredLandSize(act.fruit)) {
-                throw new Error(`invalid level`)
+                throw new Error(`invalid level current level ${farm.land.length}, required: ${requiredLandSize(act.fruit)}`)
             }
             const price: BigNumber = getSeedPrice(act.fruit);
             const fmcPrice = await getMarketPrice(price, repository);
@@ -454,6 +444,7 @@ async function createFarm(event, repository:Repository): Promise<any> {
         }
     } as Farm
     newFarm.syncedAt =  nowInSeconds();
+    newFarm.recoveryTime = {}
     await repository.createFarm(address, newFarm)
     
     const response = {
@@ -463,11 +454,14 @@ async function createFarm(event, repository:Repository): Promise<any> {
     return response;
 }
 
-function nowInSeconds(): number {
+export function nowInSeconds(): number {
     return Math.floor(DateTime.now().toSeconds())
 }
 
-exports.handler = provideHandle(new Repository());
+const constructorRepository = new Repository()
+const constructorStaker = new Staker(constructorRepository)
+
+exports.handler = provideHandle(constructorRepository, constructorStaker);
 exports.provideHandle = provideHandle;
 
 async function craft(event: any, repository: Repository) {
@@ -518,6 +512,44 @@ async function craft(event: any, repository: Repository) {
         throw new Error("NO_RECIPE")
     }
 
-    console.log("craft event", event)
 }
 
+async function itemBalanceOf(event: any, repository: Repository) {
+    console.log('itemBalanceOf ', event)
+    let resource:any = recipes.find( r => r.address === event.resource)
+    if (!resource) {
+        resource = items.find( r => r.address === event.resource)
+    }
+    if (resource) {
+        const farm:Farm = await repository.getFarm(event.address);
+        let balance = '0'
+        if (farm && farm.inventory && farm.inventory[resource.name]) {
+            balance = farm.inventory[resource.name]
+        }
+        const response = {
+            statusCode: 200,
+            body: balance
+        };
+        return response;
+    } else {
+        throw new Error("NO_RESOURCE in item blance: " + event.resource)
+    }
+}
+
+async function itemTotalSupply(event: any, repository: Repository) {
+    console.log('itemTotalSupply  ', event)
+    let resource:any = recipes.find( r => r.address === event.resource)
+    if (!resource) {
+        resource = items.find( r => r.address === event.resource)
+    }
+    if (resource) {
+        const balance = await repository.getResourceTotalSupply(resource.name)
+        const response = {
+            statusCode: 200,
+            body: balance
+        };
+        return response;
+    } else {
+        throw new Error("NO_REROURCE:  in total supply " + event.resource)
+    } 
+}

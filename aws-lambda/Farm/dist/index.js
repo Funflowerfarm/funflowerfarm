@@ -36,18 +36,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.nowInSeconds = void 0;
 var repository_1 = require("./repository");
+var staker_1 = require("./staker");
 var bignumber_js_1 = require("bignumber.js");
 var farm_1 = require("./farm");
 var luxon_1 = require("luxon");
 var crafting_1 = require("./crafting");
-function provideHandle(repository) {
+function provideHandle(repository, staker) {
     var _this = this;
     return function (event) { return __awaiter(_this, void 0, void 0, function () {
-        var address, farm, response, response, address, farm, balance, response, response;
+        var address, farm, response, response, address, farm, balance, response, address, resource, amount, response, e_1, response;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    _a.trys.push([0, 9, , 10]);
                     if (!(event.method === 'getLand')) return [3 /*break*/, 2];
                     address = event.address;
                     return [4 /*yield*/, repository.getFarm(address)];
@@ -94,11 +97,23 @@ function provideHandle(repository) {
                     if (event.method === 'sync') {
                         return [2 /*return*/, sync(event, repository)];
                     }
+                    else if (event.method === 'itemBalanceOf') {
+                        return [2 /*return*/, itemBalanceOf(event, repository)];
+                    }
                     else if (event.method === 'craft') {
                         return [2 /*return*/, craft(event, repository)];
                     }
                     else if (event.method === 'levelUp') {
                         return [2 /*return*/, levelUp(event, repository)];
+                    }
+                    else if (event.method === 'itemTotalSupply') {
+                        return [2 /*return*/, itemTotalSupply(event, repository)];
+                    }
+                    else if (event.method === 'stake') {
+                        address = event.address;
+                        resource = event.resource;
+                        amount = event.amount;
+                        return [2 /*return*/, staker.stake(address, resource, amount)];
                     }
                     else {
                         response = {
@@ -108,7 +123,15 @@ function provideHandle(repository) {
                         return [2 /*return*/, response];
                     }
                     _a.label = 8;
-                case 8: return [2 /*return*/];
+                case 8: return [3 /*break*/, 10];
+                case 9:
+                    e_1 = _a.sent();
+                    response = {
+                        statusCode: 500,
+                        body: e_1.Message,
+                    };
+                    return [2 /*return*/, response];
+                case 10: return [2 /*return*/];
             }
         });
     }); };
@@ -428,7 +451,7 @@ function sync(event, repository) {
                     }
                     if (!(act.action == farm_1.Action.Plant)) return [3 /*break*/, 4];
                     if (farm.land.length < requiredLandSize(act.fruit)) {
-                        throw new Error("invalid level");
+                        throw new Error("invalid level current level ".concat(farm.land.length, ", required: ").concat(requiredLandSize(act.fruit)));
                     }
                     price = getSeedPrice(act.fruit);
                     return [4 /*yield*/, getMarketPrice(price, repository)];
@@ -514,6 +537,7 @@ function createFarm(event, repository) {
                         }
                     };
                     newFarm.syncedAt = nowInSeconds();
+                    newFarm.recoveryTime = {};
                     return [4 /*yield*/, repository.createFarm(address, newFarm)];
                 case 1:
                     _a.sent();
@@ -529,7 +553,10 @@ function createFarm(event, repository) {
 function nowInSeconds() {
     return Math.floor(luxon_1.DateTime.now().toSeconds());
 }
-exports.handler = provideHandle(new repository_1.Repository());
+exports.nowInSeconds = nowInSeconds;
+var constructorRepository = new repository_1.Repository();
+var constructorStaker = new staker_1.Staker(constructorRepository);
+exports.handler = provideHandle(constructorRepository, constructorStaker);
 exports.provideHandle = provideHandle;
 function craft(event, repository) {
     return __awaiter(this, void 0, void 0, function () {
@@ -537,7 +564,6 @@ function craft(event, repository) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    debugger;
                     address = event.address, resource = event.resource, amount = event.amount;
                     safeAmount = new bignumber_js_1.BigNumber(amount).dividedBy(new bignumber_js_1.BigNumber(10).pow(18));
                     recipe = crafting_1.recipes.find(function (r) { return r.address === resource; });
@@ -586,9 +612,60 @@ function craft(event, repository) {
                     };
                     return [2 /*return*/, response];
                 case 3: throw new Error("NO_RECIPE");
-                case 4:
-                    console.log("craft event", event);
-                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function itemBalanceOf(event, repository) {
+    return __awaiter(this, void 0, void 0, function () {
+        var resource, farm, balance, response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    console.log('itemBalanceOf ', event);
+                    resource = crafting_1.recipes.find(function (r) { return r.address === event.resource; });
+                    if (!resource) {
+                        resource = crafting_1.items.find(function (r) { return r.address === event.resource; });
+                    }
+                    if (!resource) return [3 /*break*/, 2];
+                    return [4 /*yield*/, repository.getFarm(event.address)];
+                case 1:
+                    farm = _a.sent();
+                    balance = '0';
+                    if (farm && farm.inventory && farm.inventory[resource.name]) {
+                        balance = farm.inventory[resource.name];
+                    }
+                    response = {
+                        statusCode: 200,
+                        body: balance
+                    };
+                    return [2 /*return*/, response];
+                case 2: throw new Error("NO_RESOURCE in item blance: " + event.resource);
+            }
+        });
+    });
+}
+function itemTotalSupply(event, repository) {
+    return __awaiter(this, void 0, void 0, function () {
+        var resource, balance, response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    console.log('itemTotalSupply  ', event);
+                    resource = crafting_1.recipes.find(function (r) { return r.address === event.resource; });
+                    if (!resource) {
+                        resource = crafting_1.items.find(function (r) { return r.address === event.resource; });
+                    }
+                    if (!resource) return [3 /*break*/, 2];
+                    return [4 /*yield*/, repository.getResourceTotalSupply(resource.name)];
+                case 1:
+                    balance = _a.sent();
+                    response = {
+                        statusCode: 200,
+                        body: balance
+                    };
+                    return [2 /*return*/, response];
+                case 2: throw new Error("NO_REROURCE:  in total supply " + event.resource);
             }
         });
     });

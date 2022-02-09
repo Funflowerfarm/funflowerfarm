@@ -22,6 +22,24 @@ const totalSupplyPrimaryKey = 'farm-game/TotalSupply';
 const supplySecondary = 'Supply';
 
 export class Repository {
+    async getResourceTotalSupply(name: string): Promise<string> {
+      //TODO: implement the add / minus supply of resource
+      const result = await dynamo
+      .get({
+        TableName: farmGameTable,
+        Key: {
+          p: totalSupplyPrimaryKey,
+          s: supplySecondary + '/' + name
+        }
+      })
+      .promise();
+    
+      if (result.Item) {
+        return result.Item.supply
+      } else {
+        return '0'
+      }
+    }
 
   async  updateTotalSupply(resultofActions: BigNumber) {
     let supply = await this.totalSupply()

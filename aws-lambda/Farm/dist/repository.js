@@ -54,6 +54,33 @@ var supplySecondary = 'Supply';
 var Repository = /** @class */ (function () {
     function Repository() {
     }
+    Repository.prototype.getResourceTotalSupply = function (name) {
+        return __awaiter(this, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, dynamo
+                            .get({
+                            TableName: farmGameTable,
+                            Key: {
+                                p: totalSupplyPrimaryKey,
+                                s: supplySecondary + '/' + name
+                            }
+                        })
+                            .promise()];
+                    case 1:
+                        result = _a.sent();
+                        if (result.Item) {
+                            return [2 /*return*/, result.Item.supply];
+                        }
+                        else {
+                            return [2 /*return*/, '0'];
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     Repository.prototype.updateTotalSupply = function (resultofActions) {
         return __awaiter(this, void 0, void 0, function () {
             var supply;

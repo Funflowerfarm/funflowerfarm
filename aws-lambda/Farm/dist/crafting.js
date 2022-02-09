@@ -10,6 +10,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_INVENTORY = exports.items = exports.recipes = void 0;
+//backend
 var deployAddresses_1 = require("./utils/deployAddresses");
 var Token = "../../abis/Token.json";
 var Farm = "../../abis/Farm.json";
@@ -324,7 +325,7 @@ exports.items = __spreadArray(__spreadArray([], exports.recipes, true), [
         description: "A natural resource in Sunflower Land used for crafting",
         image: stone,
         type: "ERC20",
-        address: deployAddresses_1.deployAddresses["Stone"],
+        address: deployAddresses_1.deployAddresses["Stone"]
     },
     {
         name: "Wood",

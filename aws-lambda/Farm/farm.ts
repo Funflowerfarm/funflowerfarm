@@ -20,6 +20,7 @@ export class Farm {
     land : Square[]
     inventory: Inventory
     syncedAt: number
+    recoveryTime: any
 }
 
 

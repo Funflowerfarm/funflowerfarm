@@ -20,7 +20,8 @@
     "zip": "cd dist && rm -rf ./farm.zip && zip -r farm.zip ./",
     "test": "mocha dist/tests/unit/",
     "server": "AWS_ACCESS_KEY_ID=AKIASXZ3APWM7CLXODHH AWS_SECRET_ACCESS_KEY=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 AWS_DEFAULT_REGION=us-west-1 node ./dist/App.js",
-    "server-win": "node ./dist/App.js"
+    "server-win": "node ./dist/App.js",
+    "bs": "npm run build && npm run server"
 
   },
   "devDependencies": {
