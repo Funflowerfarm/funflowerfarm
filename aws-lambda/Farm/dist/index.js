@@ -103,6 +103,18 @@ function provideHandle(repository, staker) {
                     else if (event.method === 'craft') {
                         return [2 /*return*/, craft(event, repository)];
                     }
+                    else if (event.method === 'receiveReward') {
+                        return [2 /*return*/, receiveReward(event, repository)];
+                    }
+                    else if (event.method === 'myReward') {
+                        return [2 /*return*/, myReward(event, repository).then(function (x) {
+                                var response = {
+                                    statusCode: 200,
+                                    body: x.toString(),
+                                };
+                                return response; //receiveReward
+                            })];
+                    }
                     else if (event.method === 'levelUp') {
                         return [2 /*return*/, levelUp(event, repository)];
                     }
@@ -147,7 +159,7 @@ function totalSupply(repo) {
                     supply = _a.sent();
                     response = {
                         statusCode: 200,
-                        body: supply,
+                        body: supply.toString(),
                     };
                     return [2 /*return*/, response];
             }
@@ -538,6 +550,7 @@ function createFarm(event, repository) {
                     };
                     newFarm.syncedAt = nowInSeconds();
                     newFarm.recoveryTime = {};
+                    newFarm.lastReward = 0;
                     return [4 /*yield*/, repository.createFarm(address, newFarm)];
                 case 1:
                     _a.sent();
@@ -666,6 +679,63 @@ function itemTotalSupply(event, repository) {
                     };
                     return [2 /*return*/, response];
                 case 2: throw new Error("NO_REROURCE:  in total supply " + event.resource);
+            }
+        });
+    });
+}
+function myReward(event, repository) {
+    return __awaiter(this, void 0, void 0, function () {
+        var farm, lastOpenDate, threeDaysAgo, landSize, farmBalance, farmCount, farmShare;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, repository.getFarm(event.address)];
+                case 1:
+                    farm = _a.sent();
+                    lastOpenDate = farm.lastReward;
+                    threeDaysAgo = nowInSeconds() - (60 * 60 * 24 * 3);
+                    if (lastOpenDate > threeDaysAgo) {
+                        throw new Error('No reward ready, last open was ' + lastOpenDate);
+                    }
+                    landSize = farm.land.length;
+                    farmBalance = new bignumber_js_1.BigNumber(farm.inventory.balance);
+                    return [4 /*yield*/, repository.getFarmCount()];
+                case 2:
+                    farmCount = _a.sent();
+                    farmShare = farmBalance.dividedBy(new bignumber_js_1.BigNumber(farmCount));
+                    if (landSize <= 5) {
+                        return [2 /*return*/, farmShare.dividedBy(new bignumber_js_1.BigNumber(10))];
+                    }
+                    else if (landSize <= 8) {
+                        return [2 /*return*/, farmShare.dividedBy(new bignumber_js_1.BigNumber(5))];
+                    }
+                    else if (landSize <= 11) {
+                        return [2 /*return*/, farmShare.dividedBy(new bignumber_js_1.BigNumber(2))];
+                    }
+                    return [2 /*return*/, farmShare.multipliedBy(new bignumber_js_1.BigNumber(3)).dividedBy(new bignumber_js_1.BigNumber(2))];
+            }
+        });
+    });
+}
+function receiveReward(event, repository) {
+    return __awaiter(this, void 0, void 0, function () {
+        var reward, farm, balance;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, myReward(event, repository)];
+                case 1:
+                    reward = _a.sent();
+                    if (!reward.isPositive) return [3 /*break*/, 3];
+                    return [4 /*yield*/, repository.getFarm(event.address)];
+                case 2:
+                    farm = _a.sent();
+                    balance = new bignumber_js_1.BigNumber(farm.inventory.balance);
+                    balance = balance.plus(reward);
+                    farm.inventory.balance = balance.toString();
+                    farm.lastReward = nowInSeconds();
+                    repository.saveFarm(event.address, farm);
+                    return [3 /*break*/, 4];
+                case 3: throw new Error('reward is not positive: ' + reward.toString());
+                case 4: return [2 /*return*/];
             }
         });
     });

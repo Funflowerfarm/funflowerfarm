@@ -21,7 +21,46 @@ const farmPrimaryKey = 'farm-game/Farm';
 const totalSupplyPrimaryKey = 'farm-game/TotalSupply';
 const supplySecondary = 'Supply';
 
+const farmCounter = 'FarmCounter';
+
+
 export class Repository {
+
+    async getFarmCount() : Promise<number> {
+      const result = await dynamo
+      .get({
+        TableName: farmGameTable,
+        Key: {
+          p: totalSupplyPrimaryKey,
+          s: farmCounter
+        }
+      })
+      .promise();
+    
+      if (result.Item) {
+        return result.Item.counter
+      } else {
+        return 0
+      }
+    }
+
+    async incFarmCount() : Promise<number> {
+      let counter = await this.getFarmCount()
+      counter++
+      await dynamo
+      .put({
+        TableName: farmGameTable,
+        Item: {
+          p: totalSupplyPrimaryKey,
+          s: farmCounter,
+          counter: counter
+        }
+      })
+      .promise(); 
+
+      return counter
+    }
+
     async getResourceTotalSupply(name: string): Promise<string> {
       //TODO: implement the add / minus supply of resource
       const result = await dynamo
@@ -77,7 +116,8 @@ export class Repository {
 }
 
   async createFarm(address: string, newFarm : Farm) {
-      return this.saveFarm(address, newFarm)
+      await this.saveFarm(address, newFarm)
+      await this.incFarmCount()
   }
 
   async saveFarm(address: string, farm : Farm) {

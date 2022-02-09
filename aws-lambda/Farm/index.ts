@@ -52,6 +52,16 @@ function provideHandle(repository: Repository, staker: Staker) {
                 return itemBalanceOf(event, repository);
             } else if (event.method === 'craft') {
                 return craft(event, repository);
+            } else if (event.method === 'receiveReward') {
+                return receiveReward(event, repository);
+            } else if (event.method === 'myReward') {
+                return myReward(event, repository).then(x =>{
+                    const response = {
+                        statusCode: 200,
+                        body: x.toString(),
+                    };
+                    return response;//receiveReward
+                });
             } else if (event.method === 'levelUp') {
                 return levelUp(event, repository);
             } else if (event.method === 'itemTotalSupply') {
@@ -82,7 +92,7 @@ async function totalSupply(repo:Repository) {
     const supply = await repo.totalSupply()
     const response = {
         statusCode: 200,
-        body: supply,
+        body: supply.toString(),
     };
     return response;
 }
@@ -445,6 +455,7 @@ async function createFarm(event, repository:Repository): Promise<any> {
     } as Farm
     newFarm.syncedAt =  nowInSeconds();
     newFarm.recoveryTime = {}
+    newFarm.lastReward = 0
     await repository.createFarm(address, newFarm)
     
     const response = {
@@ -553,3 +564,67 @@ async function itemTotalSupply(event: any, repository: Repository) {
         throw new Error("NO_REROURCE:  in total supply " + event.resource)
     } 
 }
+
+async function myReward(event: any, repository: Repository): Promise<BigNumber> {
+    /*
+          uint lastOpenDate = rewardsOpenedAt[msg.sender];
+
+        // Block timestamp is seconds based
+        uint threeDaysAgo = block.timestamp.sub(60 * 60 * 24 * 3); 
+
+        require(lastOpenDate < threeDaysAgo, "NO_REWARD_READY");
+
+        uint landSize = fields[msg.sender].length;
+        // E.g. $1000
+        uint farmBalance = token.balanceOf(address(this));
+        // E.g. $1000 / 500 farms = $2 
+        uint farmShare = farmBalance / farmCount;
+
+        if (landSize <= 5) {
+            // E.g $0.2
+            return farmShare.div(10);
+        } else if (landSize <= 8) {
+            // E.g $0.4
+            return farmShare.div(5);
+        } else if (landSize <= 11) {
+            // E.g $1
+            return farmShare.div(2);
+        }
+        
+        // E.g $3
+        return farmShare.mul(3).div(2);
+        */
+    const farm = await repository.getFarm(event.address)
+    const lastOpenDate = farm.lastReward
+    const threeDaysAgo = nowInSeconds() - (60 * 60 * 24 * 3)
+    if (lastOpenDate > threeDaysAgo) {
+        throw new Error('No reward ready, last open was ' + lastOpenDate)
+    }
+    const landSize = farm.land.length
+    const farmBalance = new BigNumber(farm.inventory.balance)
+    const farmCount = await repository.getFarmCount()
+    const farmShare = farmBalance.dividedBy(new BigNumber(farmCount))
+    if (landSize <= 5) {
+        return farmShare.dividedBy(new BigNumber(10))
+    } else if( landSize <= 8) {
+        return farmShare.dividedBy(new BigNumber(5))
+    } else if( landSize <= 11) {
+        return farmShare.dividedBy(new BigNumber(2))
+    }
+    return farmShare.multipliedBy(new BigNumber(3)).dividedBy(new BigNumber(2))
+}
+
+async function receiveReward(event: any, repository: Repository) {
+    const reward:BigNumber = await myReward(event, repository)
+    if (reward.isPositive) {
+        const farm = await repository.getFarm(event.address)
+        let balance = new BigNumber(farm.inventory.balance)
+        balance = balance.plus(reward)
+        farm.inventory.balance = balance.toString()
+        farm.lastReward = nowInSeconds()
+        repository.saveFarm(event.address, farm)
+    } else {
+        throw new Error('reward is not positive: ' + reward.toString());
+    }
+}
+

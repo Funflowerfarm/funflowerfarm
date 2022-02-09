@@ -21,6 +21,7 @@ export class Farm {
     inventory: Inventory
     syncedAt: number
     recoveryTime: any
+    lastReward: number
 }
 
 

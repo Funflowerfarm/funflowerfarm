@@ -1,4 +1,19 @@
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -65,10 +80,10 @@ var Wood = /** @class */ (function () {
         uint secondsRecovered = RECOVERY_SECONDS - difference;
         
         return STRENGTH * secondsRecovered / RECOVERY_SECONDS;*/
-        if (!farm.recoveryTime[Wood.name]) {
+        if (!farm.recoveryTime[this.constructor.name]) {
             return this.STRENGTH;
         }
-        var recoveredAt = farm.recoveryTime[Wood.name];
+        var recoveredAt = farm.recoveryTime[this.constructor.name];
         if ((0, index_1.nowInSeconds)() > recoveredAt) {
             return this.STRENGTH;
         }
@@ -78,7 +93,7 @@ var Wood = /** @class */ (function () {
     };
     Wood.prototype.stake = function (address, amount) {
         return __awaiter(this, void 0, void 0, function () {
-            var farm, available, newAvailable, amountToRecover, timeToRecover, multiplier, total, current, updated, updatedrequire;
+            var farm, available, newAvailable, amountToRecover, timeToRecover, total, current, updated, updatedrequire;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.repo.getFarm(address)];
@@ -86,22 +101,21 @@ var Wood = /** @class */ (function () {
                         farm = _a.sent();
                         available = this.getAvailable(farm);
                         if (available.lte(amount)) {
-                            throw new Error("No Wood replenished, available ".concat(available.toString(), " amount ").concat(amount.toString()));
+                            throw new Error("No ".concat(this.constructor.name, " replenished, available ").concat(available.toString(), " amount ").concat(amount.toString()));
                         }
                         newAvailable = available.minus(amount);
                         amountToRecover = this.STRENGTH.minus(newAvailable);
                         timeToRecover = this.RECOVERY_SECONDS.multipliedBy(amountToRecover).dividedBy(this.STRENGTH);
                         //save recovery time
-                        farm.recoveryTime[Wood.name] = (0, index_1.nowInSeconds)() + timeToRecover.toNumber();
-                        multiplier = new bignumber_js_1.default(randomInt(3, 5));
-                        total = amount.multipliedBy(multiplier);
-                        if (farm.inventory[Wood.name]) {
-                            current = new bignumber_js_1.default(farm.inventory[Wood.name]);
+                        farm.recoveryTime[this.constructor.name] = (0, index_1.nowInSeconds)() + timeToRecover.toNumber();
+                        total = this.transformInputToOutputResource(amount);
+                        if (farm.inventory[this.constructor.name]) {
+                            current = new bignumber_js_1.default(farm.inventory[this.constructor.name]);
                             updated = current.plus(total);
-                            farm.inventory[Wood.name] = updated.toString();
+                            farm.inventory[this.constructor.name] = updated.toString();
                         }
                         else {
-                            farm.inventory[Wood.name] = total.toString();
+                            farm.inventory[this.constructor.name] = total.toString();
                         }
                         updatedrequire = new bignumber_js_1.default(farm.inventory[this.requires]).minus(amount);
                         farm.inventory[this.requires] = updatedrequire.toString();
@@ -113,13 +127,74 @@ var Wood = /** @class */ (function () {
             });
         });
     };
+    Wood.prototype.transformInputToOutputResource = function (amount) {
+        var multiplier = new bignumber_js_1.default(randomInt(3, 5));
+        var total = amount.multipliedBy(multiplier);
+        return total;
+    };
     return Wood;
 }());
+var Stone = /** @class */ (function (_super) {
+    __extends(Stone, _super);
+    function Stone() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        // 2 hrs
+        _this.RECOVERY_SECONDS = new bignumber_js_1.default(7200);
+        // How much stone a quarry has
+        _this.STRENGTH = new bignumber_js_1.default(10).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
+        _this.requires = 'Wood pickaxe';
+        return _this;
+    }
+    Stone.prototype.transformInputToOutputResource = function (amount) {
+        var multiplier = new bignumber_js_1.default(randomInt(2, 4));
+        var total = amount.multipliedBy(multiplier);
+        return total;
+    };
+    return Stone;
+}(Wood));
+var Iron = /** @class */ (function (_super) {
+    __extends(Iron, _super);
+    function Iron() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        // 2 hrs
+        _this.RECOVERY_SECONDS = new bignumber_js_1.default(14400);
+        // How much stone a quarry has
+        _this.STRENGTH = new bignumber_js_1.default(3).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
+        _this.requires = 'Stone Pickaxe';
+        return _this;
+    }
+    Iron.prototype.transformInputToOutputResource = function (amount) {
+        var multiplier = new bignumber_js_1.default(randomInt(3, 5));
+        var total = amount.multipliedBy(multiplier);
+        return total;
+    };
+    return Iron;
+}(Wood));
+var Gold = /** @class */ (function (_super) {
+    __extends(Gold, _super);
+    function Gold() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        // 12 hrs
+        _this.RECOVERY_SECONDS = new bignumber_js_1.default(43200);
+        _this.STRENGTH = new bignumber_js_1.default(2).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
+        _this.requires = 'Iron Pickaxe';
+        return _this;
+    }
+    Gold.prototype.transformInputToOutputResource = function (amount) {
+        var multiplier = new bignumber_js_1.default(randomInt(1, 2));
+        var total = amount.multipliedBy(multiplier);
+        return total;
+    };
+    return Gold;
+}(Wood));
 var Staker = /** @class */ (function () {
     function Staker(r) {
         this.repo = r;
         this.stakeMap = new Map();
         this.stakeMap.set(Wood.name, new Wood(this.repo));
+        this.stakeMap.set(Stone.name, new Stone(this.repo));
+        this.stakeMap.set(Gold.name, new Gold(this.repo));
+        this.stakeMap.set(Iron.name, new Iron(this.repo));
     }
     Staker.prototype.stake = function (address, resourceAddress, amount) {
         return __awaiter(this, void 0, void 0, function () {
@@ -135,7 +210,7 @@ var Staker = /** @class */ (function () {
                     case 1:
                         _a.sent();
                         return [3 /*break*/, 3];
-                    case 2: throw new Error("Not Known resoucrce " + resourceAddress);
+                    case 2: throw new Error("Not Known resource " + resourceAddress);
                     case 3: return [2 /*return*/];
                 }
             });

@@ -38,11 +38,11 @@ class Wood {
         
         return STRENGTH * secondsRecovered / RECOVERY_SECONDS;*/
 
-        if (!farm.recoveryTime[Wood.name]) {
+        if (!farm.recoveryTime[this.constructor.name]) {
             return this.STRENGTH;  
         }
 
-        const recoveredAt:number = farm.recoveryTime[Wood.name]
+        const recoveredAt:number = farm.recoveryTime[this.constructor.name]
 
         if (nowInSeconds() > recoveredAt) {
             return this.STRENGTH;
@@ -88,24 +88,22 @@ class Wood {
         const farm = await this.repo.getFarm(address)
         const available = this.getAvailable(farm)
         if (available.lte(amount)) {
-            throw new Error(`No Wood replenished, available ${available.toString()} amount ${amount.toString()}`)
+            throw new Error(`No ${this.constructor.name} replenished, available ${available.toString()} amount ${amount.toString()}`)
         }
         const newAvailable = available.minus(amount)
         const amountToRecover = this.STRENGTH.minus(newAvailable)
         const timeToRecover = this.RECOVERY_SECONDS.multipliedBy(amountToRecover).dividedBy(this.STRENGTH)
         //save recovery time
-        farm.recoveryTime[Wood.name] = nowInSeconds() + timeToRecover.toNumber()
+        farm.recoveryTime[this.constructor.name] = nowInSeconds() + timeToRecover.toNumber()
 
-        const multiplier = new BigNumber(randomInt(3, 5))
+        const total = this.transformInputToOutputResource(amount)
 
-        const total = amount.multipliedBy(multiplier)
-
-        if (farm.inventory[Wood.name]) {
-            const current = new BigNumber(farm.inventory[Wood.name])
+        if (farm.inventory[this.constructor.name]) {
+            const current = new BigNumber(farm.inventory[this.constructor.name])
             const updated = current.plus(total)
-            farm.inventory[Wood.name] = updated.toString()
+            farm.inventory[this.constructor.name] = updated.toString()
         } else {
-            farm.inventory[Wood.name] = total.toString() 
+            farm.inventory[this.constructor.name] = total.toString() 
         }
 
         const updatedrequire = new BigNumber(farm.inventory[this.requires]).minus(amount)
@@ -120,15 +118,58 @@ class Wood {
     }
 }
 
+
+
+class Stone extends Wood {
+    // 2 hrs
+    readonly RECOVERY_SECONDS = new BigNumber(7200);
+  // How much stone a quarry has
+
+    readonly STRENGTH:BigNumber = new BigNumber(10).multipliedBy(new BigNumber(10).pow(18)) //10 * (10**18);
+
+    readonly requires:string = 'Wood pickaxe'
+
+
+    transformInputToOutputResource(amount: BigNumber): BigNumber {
+        const multiplier = new BigNumber(randomInt(2, 4))
+        const total = amount.multipliedBy(multiplier)
+        return total      
+    }
+
+}
+
+class Iron extends Wood {
+    // 2 hrs
+    readonly RECOVERY_SECONDS = new BigNumber(14400);
+  // How much stone a quarry has
+
+    readonly STRENGTH:BigNumber = new BigNumber(3).multipliedBy(new BigNumber(10).pow(18)) //10 * (10**18);
+
+    readonly requires:string = 'Stone Pickaxe'
+
+
+    transformInputToOutputResource(amount: BigNumber): BigNumber {
+        const multiplier = new BigNumber(randomInt(3, 5))
+        const total = amount.multipliedBy(multiplier)
+        return total      
+    }
+
+}
+
 class Gold extends Wood {
     // 12 hrs
     readonly RECOVERY_SECONDS = new BigNumber(43200);
 
     readonly STRENGTH:BigNumber = new BigNumber(2).multipliedBy(new BigNumber(10).pow(18)) //10 * (10**18);
 
+    readonly requires:string = 'Iron Pickaxe'
 
 
-
+    transformInputToOutputResource(amount: BigNumber): BigNumber {
+        const multiplier = new BigNumber(randomInt(1, 2))
+        const total = amount.multipliedBy(multiplier)
+        return total      
+    }
 
 }
 
@@ -141,6 +182,10 @@ export class Staker {
         this.repo = r
         this.stakeMap = new Map<string, Wood>()
         this.stakeMap.set(Wood.name, new Wood(this.repo))
+        this.stakeMap.set(Stone.name, new Stone(this.repo))
+        this.stakeMap.set(Gold.name, new Gold(this.repo))
+        this.stakeMap.set(Iron.name, new Iron(this.repo))
+
       }
 
     async stake(address:string, resourceAddress:string, amount:string) {
@@ -150,7 +195,7 @@ export class Staker {
         if (stackeable) {
             await stackeable.stake(address, new BigNumber(amount))
         } else {
-            throw new Error("Not Known resoucrce " + resourceAddress)
+            throw new Error("Not Known resource " + resourceAddress)
         }
     }
 

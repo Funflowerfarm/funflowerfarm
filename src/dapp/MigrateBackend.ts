@@ -86,23 +86,23 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
     }
 
     function createFarm(args) {
-      /*
-        const postPromise =  axios.post('/prod/farm-game/farm', 
-            method: 'createFarm',
-            address: args[0].from
-          });
-        const promi = Web3PromiEvent()
-        postPromise.then(function() {
-          console.log('create farm promise', postPromise)
-          promi.eventEmitter.emit("receipt", { myReceipt : {}})
-        })
-        return promi.eventEmitter;
-        */
        return sendPostWithPromi(args, 'createFarm', {})
     }
 
+    function receiveReward(args) {
+      return sendPostWithPromi(args, 'receiveReward', {})
+   }
+
     function sync(args, sendArgs) {
       return sendPostWithPromi(sendArgs, 'sync', {actions: args[0]})
+    }
+
+    function stake(args, sendArgs) {
+        return sendPostWithPromi(sendArgs, 'stake', {
+          resource: args[0], 
+          amount: args[1]
+        }
+      )
     }
 
     function craft(args, sendArgs) {
@@ -124,9 +124,20 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
             resolve(r.data.body)
           })
         })
-  }
+     }
 
+     function myReward(m, args) {
+      return axios.post('/prod/farm-game/farm', {
+          method: m,
+          address: args[0].from
+        }).then( r => {
+          return new Promise(async (resolve, reject) => {
+            resolve(r.data.body)
+          })
+        })
+     }
 
+      
 
     const methods  = Object.keys(tokenContract.methods)
     methods.forEach(m => {
@@ -143,6 +154,8 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                     let result = null
                     if (m === 'getLand') {
                         result = getLand(m, args)
+                    } else if (m === 'myReward') {
+                      result = myReward(m, args)
                     } else {
                         result = target(...args)
                     }
@@ -159,14 +172,18 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                     let result = null
                     if (m === 'createFarm') {
                       result = createFarm(sendArgs);
-                    } else if (m === 'craft') {
+                    }else if (m === 'craft') {
                       result = craft(args, sendArgs);
+                    } else if (m === 'receiveReward') {
+                      result = receiveReward(sendArgs);
                     } else if (m === 'sync') {
                       result = sync(args, sendArgs);
                     } else if (m === 'levelUp') {
                       result = levelUp(sendArgs);
+                    } else if (m === 'stake') {
+                      result = stake(args, sendArgs);
                     } else {
-                      result = target(...sendArgs)
+                      result = target(...sendArgs)//
                     }
                     console.log(`result MigrateBackendFarm send ${m}`, result)
                     /*resultProxySend.on = new Proxy(resultProxySend.on, {
@@ -191,6 +208,33 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 
   function  MigrateBackendItem(tokenContract: any) : any {
+
+    function itemBalanceOf(args, resource) {
+      return axios.post('/prod/farm-game/farm', {
+          address: args[0].from,
+          resource: resource,
+          method: 'itemBalanceOf'
+        })
+        .then(function (response) {
+          return new Promise(function(resolve, reject) {
+               resolve(response.data.body);
+            });
+        })
+  }
+
+  function itemTotalSupply(args, resource) {
+    return axios.post('/prod/farm-game/farm', {
+        address: args[0].from,
+        resource: resource,
+        method: 'itemTotalSupply'
+      })
+      .then(function (response) {
+        return new Promise(function(resolve, reject) {
+             resolve(response.data.body);
+          });
+      })
+}
+
     const methods  = Object.keys(tokenContract.methods)
     methods.forEach(m => {
       const proxy = new Proxy(tokenContract.methods[m], {
@@ -200,7 +244,16 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
             //
             const resultProxyCall = new Proxy(result.call, {
                 apply(target, thisArg, args) {
-                    const result = target(...args)
+                    let result 
+                    if (m === 'balanceOf') {
+                      result = itemBalanceOf(args, tokenContract._address)
+                  } else if(m === 'totalSupply') {
+                    result = itemTotalSupply(args, tokenContract._address)
+                  } else {
+                      result = target(...args)
+                  }
+
+                    
                     console.log(`result MigrateBackendItem ${tokenContract._address} function ${m}`, result)
                     return result;
                 }

@@ -51,9 +51,63 @@ var farmGameTable = 'farm-game';
 var farmPrimaryKey = 'farm-game/Farm';
 var totalSupplyPrimaryKey = 'farm-game/TotalSupply';
 var supplySecondary = 'Supply';
+var farmCounter = 'FarmCounter';
 var Repository = /** @class */ (function () {
     function Repository() {
     }
+    Repository.prototype.getFarmCount = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, dynamo
+                            .get({
+                            TableName: farmGameTable,
+                            Key: {
+                                p: totalSupplyPrimaryKey,
+                                s: farmCounter
+                            }
+                        })
+                            .promise()];
+                    case 1:
+                        result = _a.sent();
+                        if (result.Item) {
+                            return [2 /*return*/, result.Item.counter];
+                        }
+                        else {
+                            return [2 /*return*/, 0];
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Repository.prototype.incFarmCount = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var counter;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getFarmCount()];
+                    case 1:
+                        counter = _a.sent();
+                        counter++;
+                        return [4 /*yield*/, dynamo
+                                .put({
+                                TableName: farmGameTable,
+                                Item: {
+                                    p: totalSupplyPrimaryKey,
+                                    s: farmCounter,
+                                    counter: counter
+                                }
+                            })
+                                .promise()];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, counter];
+                }
+            });
+        });
+    };
     Repository.prototype.getResourceTotalSupply = function (name) {
         return __awaiter(this, void 0, void 0, function () {
             var result;
@@ -137,7 +191,15 @@ var Repository = /** @class */ (function () {
     Repository.prototype.createFarm = function (address, newFarm) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.saveFarm(address, newFarm)];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.saveFarm(address, newFarm)];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.incFarmCount()];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
             });
         });
     };
