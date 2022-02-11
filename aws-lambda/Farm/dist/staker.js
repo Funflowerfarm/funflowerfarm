@@ -50,10 +50,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Staker = void 0;
 var crafting_1 = require("./crafting");
-var bignumber_js_1 = require("bignumber.js");
+var bignumber_js_1 = __importDefault(require("bignumber.js"));
 var index_1 = require("./index");
 function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -212,6 +215,27 @@ var Staker = /** @class */ (function () {
                         return [3 /*break*/, 3];
                     case 2: throw new Error("Not Known resource " + resourceAddress);
                     case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Staker.prototype.getAvailable = function (address, resourceAddress) {
+        return __awaiter(this, void 0, void 0, function () {
+            var item, stackeable, farm;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log("getAvailable ".concat(address, " resource ").concat(resourceAddress));
+                        item = crafting_1.items.find(function (x) { return x.address == resourceAddress; });
+                        stackeable = this.stakeMap.get(item.name);
+                        if (!stackeable) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.repo.getFarm(address)];
+                    case 1:
+                        farm = _a.sent();
+                        if (!farm)
+                            return [2 /*return*/, '0'];
+                        return [2 /*return*/, stackeable.getAvailable(farm).toString()];
+                    case 2: throw new Error("Not Known resource " + resourceAddress);
                 }
             });
         });

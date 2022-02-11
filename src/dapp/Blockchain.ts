@@ -6,7 +6,7 @@ import CommunityCrafting from "../abis/CommunityCrafting.json";
 import Chicken from "../abis/Chicken.json";
 import QuickSwap from "../abis/QuickSwapRouter.json";
 import {deployAddresses} from "../dapp/utils/deployAddresses"
-import {MigrateBackendToken, MigrateBackendFarm, MigrateBackendItem} from "./MigrateBackend"
+import {MigrateBackendToken, MigrateBackendFarm, MigrateBackendItem, LoginToCentralizeBackend, LoginToCentralizeBackendSignature, SESSION_TOKEN, SESSION_ADDRESS} from "./MigrateBackend"
 
 import {
   Transaction,
@@ -166,10 +166,25 @@ export class BlockChain {
       await this.setupWeb3();
       this.oldInventory = null;
       const chainId = await this.web3.eth.getChainId();
-      if (chainId === 1337) {
+      //debugger;
+      if (chainId === 4) {
+        try {
         await this.connectToMatic();
+        } catch(e) {
+          console.log("error in  connecting to matic", e)
+          throw e;
+        }
+        console.log("Login...")
 
+        await this.login()
+
+        console.log("Loading farm...")
+        try {
         await this.loadFarm();
+      } catch(e) {
+        console.log("error in  loading farm", e)
+        //throw e;
+      }
       } else {
         throw new Error("WRONG_CHAIN");
       }
@@ -182,7 +197,7 @@ export class BlockChain {
         e.message !== "WRONG_CHAIN" &&
         e.message !== "NO_WEB3"
       ) {
-        console.log("Try again", e);
+        console.log("Try again ", e);
         await new Promise((res) => setTimeout(res, 2000));
 
         return this.initialise(retryCount + 1);
@@ -191,8 +206,29 @@ export class BlockChain {
       throw e;
     }
   }
+  async login() {
+    if (localStorage.getItem(SESSION_TOKEN)) return 
+
+    const nonce  =  await LoginToCentralizeBackend(this.account)
+    console.log(`login nonce ${nonce} ` + typeof  nonce)
+    const signedMessage = await this.web3.eth.personal.sign(nonce, this.account, '')
+    console.log(`signed message ` + signedMessage)
+    const session = await LoginToCentralizeBackendSignature(this.account, signedMessage)
+    console.log("session " + session)
+  }
 
   public async loadFarm() {
+    try {
+     /* const promises = [
+        this.getAccount(),
+        this.loadInventory(),
+        this.loadTotalItemSupplies(),
+        this.loadTreeStrength(),
+        this.loadStoneStrength(),
+        this.loadIronStrength(),
+        this.loadGoldStrength(),
+        this.loadEggCollectionTime(),
+      ]*/
     const [
       account,
       inventory,
@@ -202,7 +238,7 @@ export class BlockChain {
       iron,
       gold,
       hatchTime,
-    ] = await Promise.all([
+    ] =  await Promise.all([
       this.getAccount(),
       this.loadInventory(),
       this.loadTotalItemSupplies(),
@@ -211,7 +247,10 @@ export class BlockChain {
       this.loadIronStrength(),
       this.loadGoldStrength(),
       this.loadEggCollectionTime(),
-    ]);
+    ])
+    //const results = await Promise.all(promises.map(p => p.catch(e => e)));
+
+    //debugger;
     this.details = account;
     this.inventory = inventory;
     this.totalItemSupplies = itemSupplies;
@@ -220,7 +259,10 @@ export class BlockChain {
     this.ironStrength = iron;
     this.goldStrength = gold;
     this.eggCollectionTime = hatchTime;
-
+  } catch(e) {
+    debugger;
+    console.log('Promise.all error', e)
+  }
     await this.cacheTotalSupply();
   }
 
@@ -406,7 +448,6 @@ export class BlockChain {
         id: this.account,
       };
     }
-
     const rawBalance = await this.alchemyToken.methods
       .balanceOf(this.account)
       .call({ from: this.account });
@@ -680,6 +721,9 @@ export class BlockChain {
 
   public resetFarm() {
     this.events = [];
+    localStorage.removeItem(SESSION_TOKEN)
+    localStorage.removeItem(SESSION_ADDRESS)
+
   }
 
   public async getReward() {
@@ -942,11 +986,11 @@ export class BlockChain {
   }
 
   public async loadEggCollectionTime() {
-    const time = await this.chickens.methods
+   /* const time = await this.chickens.methods
       .hatchTime(this.account)
       .call({ from: this.account });
-
-    return Number(time);
+*/
+    return Number(/*time*/ 0);
   }
 
   public async getTreeStrength() {

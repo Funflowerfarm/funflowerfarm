@@ -1,4 +1,3 @@
-import { EventEmitter } from "stream";
 
 const axios = require('axios');
 const Web3PromiEvent = require('web3-core-promievent')
@@ -8,13 +7,18 @@ axios.defaults.baseURL = 'http://localhost:3001';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
+const DBUG = true
+
+const SESSION_TOKEN = "SESSION_TOKEN"
+const SESSION_ADDRESS = "SESSION_ADDRESS"
+
 
   function  MigrateBackendToken(tokenContract: any) : any {
     function balanceOf(args) {
-        return axios.post('/prod/farm-game/farm', {
+        return axios.post('/prod/farm-game/farm', AddCommon({
             address: args[0].from,
             method: 'token/balanceOf'
-          })
+          }))
           .then(function (response) {
             return new Promise(function(resolve, reject) {
                  resolve(response.data.body);
@@ -23,9 +27,9 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
     }
 
       function totalSupply(m, args) {
-    return axios.post('/prod/farm-game/farm', {
+    return axios.post('/prod/farm-game/farm', AddCommon({
         method: m
-      }).then( r => {
+      })).then( r => {
         return new Promise(async (resolve, reject) => {
           resolve(r.data.body)
         })
@@ -36,7 +40,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
     methods.forEach(m => {
       const proxy = new Proxy(tokenContract.methods[m], {
         apply(target, thisArg, args) {
-            console.log(`MigrateBackendToken function ${m}`, args)
+            if(DBUG) console.log(`MigrateBackendToken function ${m}`, args)
 
             // get the method *.methods.balanceOf for example
             const result = target(...args)
@@ -50,9 +54,11 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                     } else if (m === 'totalSupply') {
                       result = totalSupply(m, args)
                     } else {
-                        result = target(...args)
+                       // result = target(...args)
+                       throw new Error("MigrateBackendToken: Method should go to backend: " + m )
+
                     }
-                    console.log(`result MigrateBackendToken ${m}` , result)
+                    if(DBUG) console.log(`result MigrateBackendToken ${m}` , result)
                     return result;
                 }
               });
@@ -68,10 +74,10 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
   function  MigrateBackendFarm(tokenContract: any) : any {
 
     function sendPostWithPromi(sendArgs, method, args) {
-      const postPromise =  axios.post('/prod/farm-game/farm', {...{
+      const postPromise =  axios.post('/prod/farm-game/farm', AddCommon({...{
         method: method,
         address: sendArgs[0].from
-      }, ...args});
+      }, ...args}));
       const promi = Web3PromiEvent()
       postPromise.then(function() {
         console.log(`create ${method} promise`, postPromise)
@@ -116,10 +122,10 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 
     function getLand(m, args) {
-      return axios.post('/prod/farm-game/farm', {
+      return axios.post('/prod/farm-game/farm', AddCommon({
           method: m,
           address: args[0].from
-        }).then( r => {
+        })).then( r => {
           return new Promise(async (resolve, reject) => {
             resolve(r.data.body)
           })
@@ -127,10 +133,10 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
      }
 
      function myReward(m, args) {
-      return axios.post('/prod/farm-game/farm', {
+      return axios.post('/prod/farm-game/farm', AddCommon({
           method: m,
           address: args[0].from
-        }).then( r => {
+        })).then( r => {
           return new Promise(async (resolve, reject) => {
             resolve(r.data.body)
           })
@@ -145,7 +151,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
       tokenContract.methods[m] = function() {console.log(`${m} not implemented`)}*/
       const proxy = new Proxy(tokenContract.methods[m], {
         apply(target, thisArg, args) {
-            console.log(`MigrateBackendFarm function ${m}`, args)
+          if(DBUG) console.log(`MigrateBackendFarm function ${m}`, args)
             const result = target(...args)
             //
             const resultProxyCall = new Proxy(result.call, {
@@ -157,9 +163,10 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                     } else if (m === 'myReward') {
                       result = myReward(m, args)
                     } else {
-                        result = target(...args)
+                      throw new Error("MigrateBackendFarm: Method should go to backend: " + m )
+                       // result = target(...args)
                     }
-                    console.log(`result MigrateBackendFarm call ${m}`, result)
+                    if(DBUG) console.log(`result MigrateBackendFarm call ${m}`, result)
                     return result;
                 }
               });
@@ -183,9 +190,10 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                     } else if (m === 'stake') {
                       result = stake(args, sendArgs);
                     } else {
-                      result = target(...sendArgs)//
+                      //result = target(...sendArgs)//
+                      throw new Error("MigrateBackendFarm: Method should go to backend: " + m )
                     }
-                    console.log(`result MigrateBackendFarm send ${m}`, result)
+                    if(DBUG) console.log(`result MigrateBackendFarm send ${m}`, result)
                     /*resultProxySend.on = new Proxy(resultProxySend.on, {
                       apply(onFunctionTarget, onFunctionThis, onFunctionArgs) {
                         debugger;
@@ -210,11 +218,11 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
   function  MigrateBackendItem(tokenContract: any) : any {
 
     function itemBalanceOf(args, resource) {
-      return axios.post('/prod/farm-game/farm', {
+      return axios.post('/prod/farm-game/farm', AddCommon({
           address: args[0].from,
           resource: resource,
           method: 'itemBalanceOf'
-        })
+        }))
         .then(function (response) {
           return new Promise(function(resolve, reject) {
                resolve(response.data.body);
@@ -223,23 +231,36 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
   }
 
   function itemTotalSupply(args, resource) {
-    return axios.post('/prod/farm-game/farm', {
+    return axios.post('/prod/farm-game/farm', AddCommon({
         address: args[0].from,
         resource: resource,
         method: 'itemTotalSupply'
-      })
+      }))
       .then(function (response) {
         return new Promise(function(resolve, reject) {
              resolve(response.data.body);
           });
       })
-}
+ }
+
+ function getAvailable(args, resource) {
+  return axios.post('/prod/farm-game/farm', AddCommon({
+      address: args[0].from,
+      resource: resource,
+      method: 'itemGetAvailable'
+    }))
+    .then(function (response) {
+      return new Promise(function(resolve, reject) {
+           resolve(response.data.body);
+        });
+    })
+  }
 
     const methods  = Object.keys(tokenContract.methods)
     methods.forEach(m => {
       const proxy = new Proxy(tokenContract.methods[m], {
         apply(target, thisArg, args) {
-            console.log(`MigrateBackendItem ${tokenContract._address} function ${m}`, args)
+          if(DBUG) console.log(`MigrateBackendItem ${tokenContract._address} function ${m}`, args)
             const result = target(...args)
             //
             const resultProxyCall = new Proxy(result.call, {
@@ -249,12 +270,13 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
                       result = itemBalanceOf(args, tokenContract._address)
                   } else if(m === 'totalSupply') {
                     result = itemTotalSupply(args, tokenContract._address)
+                  } else if(m === 'getAvailable') {
+                    result = getAvailable(args, tokenContract._address)
                   } else {
-                      result = target(...args)
+                      //result = target(...args)
+                      throw new Error("MigrateBackendItem: Method should go to backend: " + m )
                   }
-
-                    
-                    console.log(`result MigrateBackendItem ${tokenContract._address} function ${m}`, result)
+                  if(DBUG) console.log(`result MigrateBackendItem ${tokenContract._address} function ${m}`, result)
                     return result;
                 }
               });
@@ -267,8 +289,59 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
     return tokenContract;
   }
 
+  async function LoginToCentralizeBackend(address:string): Promise<string> {
+   const nonce =  await axios.post('/prod/farm-game/farm', AddCommon({
+      address: address,
+      method: 'userNonce'
+    }))
+    .then(function (response) {
+      return new Promise(function(resolve, reject) {
+           resolve(response.data.body);
+        });
+    })
+    return nonce
+  }
+
+  async function LoginToCentralizeBackendSignature(address:string, signature:string): Promise<string> {
+    const nonce =  await axios.post('/prod/farm-game/farm', AddCommon({
+       address: address,
+       signature: signature,
+       method: 'userVerify'
+     }))
+     .then(function (response) {
+       return new Promise(function(resolve, reject) {
+         const authToken = response.data.body
+         localStorage.setItem(SESSION_TOKEN, authToken)
+         localStorage.setItem(SESSION_ADDRESS, address)
+
+         resolve(authToken);
+         });
+     })
+     return nonce
+   }
+
+
+   function AddCommon(obj) {
+
+     const st = localStorage.getItem(SESSION_TOKEN)
+     if (st) {
+      obj.authToken = st
+     }
+
+     const sa = localStorage.getItem(SESSION_ADDRESS)
+     if (sa) {
+      obj.address = sa
+     }
+
+     return obj
+   }
+
   export {
     MigrateBackendToken,
     MigrateBackendFarm,
-    MigrateBackendItem
+    MigrateBackendItem,
+    LoginToCentralizeBackend,
+    LoginToCentralizeBackendSignature,
+    SESSION_TOKEN,
+    SESSION_ADDRESS
   }

@@ -11,8 +11,10 @@
     "@types/luxon": "^2.0.9",
     "aws-sdk": "^2.1064.0",
     "bignumber.js": "^9.0.2",
+    "ethereumjs-util": "^7.1.4",
     "express": "^4.17.2",
-    "luxon": "^2.3.0"
+    "luxon": "^2.3.0",
+    "uuid": "^8.3.2"
   },
   "scripts": {
     "build": "tsc",

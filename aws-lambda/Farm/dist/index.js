@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,6 +56,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nowInSeconds = void 0;
+var ethUtil = __importStar(require("ethereumjs-util"));
+var uuid_1 = require("uuid");
+var sigUtil = __importStar(require("eth-sig-util"));
 var repository_1 = require("./repository");
 var staker_1 = require("./staker");
 var bignumber_js_1 = require("bignumber.js");
@@ -46,15 +68,58 @@ var crafting_1 = require("./crafting");
 function provideHandle(repository, staker) {
     var _this = this;
     return function (event) { return __awaiter(_this, void 0, void 0, function () {
-        var address, farm, response, response, address, farm, balance, response, address, resource, amount, response, e_1, response;
+        var address, user, response, address, signature, response, toVerify, response, response, address, farm, response, response, address, farm, balance, response, r, address, resource, amount, response, e_1, response;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 9, , 10]);
-                    if (!(event.method === 'getLand')) return [3 /*break*/, 2];
+                    _a.trys.push([0, 16, , 17]);
+                    console.log("event m ".concat(event.method, " s ").concat(event.authToken));
+                    if (!(event.method === 'userNonce')) return [3 /*break*/, 4];
+                    address = event.address.toLowerCase();
+                    return [4 /*yield*/, repository.getUser(address)];
+                case 1:
+                    user = _a.sent();
+                    if (!!user) return [3 /*break*/, 3];
+                    return [4 /*yield*/, repository.createUser(address)];
+                case 2:
+                    user = _a.sent();
+                    _a.label = 3;
+                case 3:
+                    response = {
+                        statusCode: 200,
+                        body: user.nonce,
+                    };
+                    return [2 /*return*/, response];
+                case 4:
+                    if (!(event.method === 'userVerify')) return [3 /*break*/, 6];
+                    debugger;
+                    address = event.address.toLowerCase();
+                    signature = event.signature;
+                    return [4 /*yield*/, userVerify(address, signature, repository)];
+                case 5:
+                    response = _a.sent();
+                    return [2 /*return*/, response];
+                case 6: return [4 /*yield*/, repository.getUser(event.address)];
+                case 7:
+                    toVerify = _a.sent();
+                    if (!toVerify) {
+                        response = {
+                            statusCode: 401,
+                            body: 'User doesnt exist ' + event.address,
+                        };
+                        return [2 /*return*/, response];
+                    }
+                    if (toVerify.session != event.authToken) {
+                        response = {
+                            statusCode: 401,
+                            body: 'Invalid session' + event.address,
+                        };
+                        return [2 /*return*/, response];
+                    }
+                    if (!(event.method === 'getLand')) return [3 /*break*/, 9];
                     address = event.address;
                     return [4 /*yield*/, repository.getFarm(address)];
-                case 1:
+                case 8:
                     farm = _a.sent();
                     if (farm) {
                         response = {
@@ -70,15 +135,15 @@ function provideHandle(repository, staker) {
                         };
                         return [2 /*return*/, response];
                     }
-                    return [3 /*break*/, 8];
-                case 2:
-                    if (!(event.method === 'createFarm')) return [3 /*break*/, 3];
+                    return [3 /*break*/, 15];
+                case 9:
+                    if (!(event.method === 'createFarm')) return [3 /*break*/, 10];
                     return [2 /*return*/, createFarm(event, repository)];
-                case 3:
-                    if (!(event.method === 'token/balanceOf')) return [3 /*break*/, 5];
+                case 10:
+                    if (!(event.method === 'token/balanceOf')) return [3 /*break*/, 12];
                     address = event.address;
                     return [4 /*yield*/, repository.getFarm(address)];
-                case 4:
+                case 11:
                     farm = _a.sent();
                     balance = '0';
                     if (farm) {
@@ -89,11 +154,13 @@ function provideHandle(repository, staker) {
                         body: balance,
                     };
                     return [2 /*return*/, response];
-                case 5:
-                    if (!(event.method === 'totalSupply')) return [3 /*break*/, 7];
+                case 12:
+                    if (!(event.method === 'totalSupply')) return [3 /*break*/, 14];
                     return [4 /*yield*/, totalSupply(repository)];
-                case 6: return [2 /*return*/, _a.sent()];
-                case 7:
+                case 13:
+                    r = _a.sent();
+                    return [2 /*return*/, r];
+                case 14:
                     if (event.method === 'sync') {
                         return [2 /*return*/, sync(event, repository)];
                     }
@@ -112,7 +179,7 @@ function provideHandle(repository, staker) {
                                     statusCode: 200,
                                     body: x.toString(),
                                 };
-                                return response; //receiveReward
+                                return response; //
                             })];
                     }
                     else if (event.method === 'levelUp') {
@@ -120,6 +187,9 @@ function provideHandle(repository, staker) {
                     }
                     else if (event.method === 'itemTotalSupply') {
                         return [2 /*return*/, itemTotalSupply(event, repository)];
+                    }
+                    else if (event.method === 'itemGetAvailable') {
+                        return [2 /*return*/, itemGetAvailable(event, staker)];
                     }
                     else if (event.method === 'stake') {
                         address = event.address;
@@ -134,16 +204,17 @@ function provideHandle(repository, staker) {
                         };
                         return [2 /*return*/, response];
                     }
-                    _a.label = 8;
-                case 8: return [3 /*break*/, 10];
-                case 9:
+                    _a.label = 15;
+                case 15: return [3 /*break*/, 17];
+                case 16:
                     e_1 = _a.sent();
+                    console.error(e_1);
                     response = {
                         statusCode: 500,
                         body: e_1.Message,
                     };
                     return [2 /*return*/, response];
-                case 10: return [2 /*return*/];
+                case 17: return [2 /*return*/];
             }
         });
     }); };
@@ -389,7 +460,7 @@ function getLandPrice(landSize) {
 }
 function levelUp(event, repository) {
     return __awaiter(this, void 0, void 0, function () {
-        var address, farm, price, fmcPrice, balance, updatedBalance, sunFlower, index;
+        var address, farm, price, fmcPrice, balance, updatedBalance, sunFlower, index, updatedFarm;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -397,7 +468,7 @@ function levelUp(event, repository) {
                     return [4 /*yield*/, repository.getFarm(address)];
                 case 1:
                     farm = _a.sent();
-                    if (!farm) return [3 /*break*/, 3];
+                    if (!farm) return [3 /*break*/, 4];
                     if (farm.land.length > 17) {
                         throw new Error('Farm Max Level reached');
                     }
@@ -417,12 +488,16 @@ function levelUp(event, repository) {
                         farm.land.push(sunFlower);
                     }
                     farm.inventory.balance = updatedBalance.toString();
-                    repository.saveFarm(address, farm);
+                    return [4 /*yield*/, repository.saveFarm(address, farm)];
+                case 3:
+                    updatedFarm = _a.sent();
                     return [2 /*return*/, {
                             statusCode: 200,
-                            body: {}
+                            body: {
+                                farm: updatedFarm
+                            }
                         }];
-                case 3: throw new Error("No Farm");
+                case 4: throw new Error("No Farm");
             }
         });
     });
@@ -736,6 +811,63 @@ function receiveReward(event, repository) {
                     return [3 /*break*/, 4];
                 case 3: throw new Error('reward is not positive: ' + reward.toString());
                 case 4: return [2 /*return*/];
+            }
+        });
+    });
+}
+function itemGetAvailable(event, staker) {
+    return __awaiter(this, void 0, void 0, function () {
+        var address, resource, available, response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    address = event.address, resource = event.resource;
+                    return [4 /*yield*/, staker.getAvailable(address, resource)];
+                case 1:
+                    available = _a.sent();
+                    response = {
+                        statusCode: 200,
+                        body: available,
+                    };
+                    return [2 /*return*/, response];
+            }
+        });
+    });
+}
+function userVerify(attempToLoginAddress, signature, repository) {
+    return __awaiter(this, void 0, void 0, function () {
+        var user, msgBufferHex, address, uuid, response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, repository.getUser(attempToLoginAddress)];
+                case 1:
+                    user = _a.sent();
+                    if (!user) return [3 /*break*/, 5];
+                    msgBufferHex = ethUtil.bufferToHex(Buffer.from(user.nonce, 'utf8'));
+                    address = sigUtil.recoverPersonalSignature({
+                        data: msgBufferHex,
+                        sig: signature
+                    });
+                    if (!(address.toLowerCase() === attempToLoginAddress.toLowerCase())) return [3 /*break*/, 3];
+                    uuid = (0, uuid_1.v4)();
+                    user.session = uuid;
+                    user.nonce = repository.generateUserNonce();
+                    return [4 /*yield*/, repository.saveUser(user)];
+                case 2:
+                    _a.sent();
+                    response = {
+                        statusCode: 200,
+                        body: user.session,
+                    };
+                    return [2 /*return*/, response];
+                case 3:
+                    Promise.reject("user " + attempToLoginAddress + " verification failed");
+                    _a.label = 4;
+                case 4: return [3 /*break*/, 6];
+                case 5:
+                    Promise.reject("user " + attempToLoginAddress + "doesnt exist");
+                    _a.label = 6;
+                case 6: return [2 /*return*/];
             }
         });
     });

@@ -36,9 +36,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Repository = void 0;
-var bignumber_js_1 = require("bignumber.js");
+var bignumber_js_1 = __importDefault(require("bignumber.js"));
+var User_1 = require("./User");
+var DateTime = require("luxon").DateTime;
 var access = 'AKIASXZ3APWM7CLXODHH';
 var key = 'RVVA7KAqUV4bQe5d44Rkjkfrj5veslK+yWcKJqpN';
 var AWS = require("aws-sdk");
@@ -52,9 +57,81 @@ var farmPrimaryKey = 'farm-game/Farm';
 var totalSupplyPrimaryKey = 'farm-game/TotalSupply';
 var supplySecondary = 'Supply';
 var farmCounter = 'FarmCounter';
+var userPrimaryKey = 'farm-game/User';
 var Repository = /** @class */ (function () {
     function Repository() {
     }
+    Repository.prototype.generateUserNonce = function () {
+        return String(Math.floor(Math.random() * 1000000));
+    };
+    Repository.prototype.saveUser = function (user) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, dynamo
+                            .put({
+                            TableName: farmGameTable,
+                            Item: {
+                                p: userPrimaryKey,
+                                s: user.address.toLowerCase(),
+                                user: user
+                            }
+                        })
+                            .promise()];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Repository.prototype.createUser = function (address) {
+        return __awaiter(this, void 0, void 0, function () {
+            var nonce, newUser;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        nonce = this.generateUserNonce();
+                        newUser = new User_1.User();
+                        newUser.address = address.toLowerCase();
+                        newUser.nonce = '' + nonce;
+                        newUser.createdAt = DateTime.now().toString();
+                        newUser.lastLogin = DateTime.now().toString();
+                        return [4 /*yield*/, this.saveUser(newUser)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, newUser];
+                }
+            });
+        });
+    };
+    Repository.prototype.getUser = function (address) {
+        return __awaiter(this, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, dynamo
+                            .get({
+                            TableName: farmGameTable,
+                            Key: {
+                                p: userPrimaryKey,
+                                s: address.toLowerCase()
+                            }
+                        })
+                            .promise()];
+                    case 1:
+                        result = _a.sent();
+                        if (result.Item) {
+                            return [2 /*return*/, result.Item.user];
+                        }
+                        else {
+                            return [2 /*return*/, undefined];
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     Repository.prototype.getFarmCount = function () {
         return __awaiter(this, void 0, void 0, function () {
             var result;
@@ -206,16 +283,21 @@ var Repository = /** @class */ (function () {
     Repository.prototype.saveFarm = function (address, farm) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, dynamo
-                        .put({
-                        TableName: farmGameTable,
-                        Item: {
-                            p: farmPrimaryKey,
-                            s: address,
-                            farm: farm
-                        }
-                    })
-                        .promise()];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, dynamo
+                            .put({
+                            TableName: farmGameTable,
+                            Item: {
+                                p: farmPrimaryKey,
+                                s: address,
+                                farm: farm
+                            }
+                        })
+                            .promise()];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, farm];
+                }
             });
         });
     };

@@ -199,4 +199,17 @@ export class Staker {
         }
     }
 
+    async getAvailable(address: string, resourceAddress: string): Promise<string> {
+        console.log(`getAvailable ${address} resource ${resourceAddress}`)
+        const item = items.find( x => x.address == resourceAddress)
+        const stackeable = this.stakeMap.get(item.name)
+        if (stackeable) {
+            const farm = await this.repo.getFarm(address)
+            if(!farm) return '0'
+            return  stackeable.getAvailable(farm).toString()
+        } else {
+            throw new Error("Not Known resource " + resourceAddress)
+        }
+    }
+
 }

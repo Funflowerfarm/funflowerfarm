@@ -1,9 +1,14 @@
 
+import * as ethUtil from 'ethereumjs-util';
+import {v4 as uuidv4} from 'uuid';
+import * as sigUtil from 'eth-sig-util';
+
 
 import { Repository } from './repository';
 import { Staker } from './staker';
 import {BigNumber} from 'bignumber.js';
 import {Farm, Square, Fruit, UserAction, Action} from './farm';
+import {User} from './User'
 import { DateTime } from 'luxon'
 
 import {Ingredient, Recipe, recipes, items} from './crafting'
@@ -13,6 +18,46 @@ import {Ingredient, Recipe, recipes, items} from './crafting'
 function provideHandle(repository: Repository, staker: Staker) {
     return async (event) => {
         try {
+            console.log(`event m ${event.method} s ${event.authToken}`)
+            if (event.method === 'userNonce') {
+                const address = event.address.toLowerCase();
+                let user:User = await repository.getUser(address)
+                if(!user) {
+                    user = await repository.createUser(address)
+                }
+                
+                const response = {
+                    statusCode: 200,
+                    body: user.nonce,
+                };
+                return response;
+            }
+
+            if (event.method === 'userVerify') {
+                debugger;
+                const address = event.address.toLowerCase()
+                const signature = event.signature
+                const response = await userVerify(address, signature, repository)
+                return response;
+            }
+
+            const toVerify = await repository.getUser(event.address)
+            if (!toVerify) {
+                const response = {
+                    statusCode: 401,
+                    body: 'User doesnt exist ' + event.address,
+                };
+                return response
+            }
+            if (toVerify.session != event.authToken) {
+                const response = {
+                    statusCode: 401,
+                    body: 'Invalid session' + event.address,
+                };
+                return response
+            }
+
+            // All method must be auth under this line
             if (event.method === 'getLand') {
                 const address = event.address;
                 const farm = await repository.getFarm(address)
@@ -45,7 +90,8 @@ function provideHandle(repository: Repository, staker: Staker) {
                 };
                 return response;
             } else if (event.method === 'totalSupply') {
-                return await  totalSupply(repository);
+                const r =  await  totalSupply(repository);
+                return r;
             } else if (event.method === 'sync') {
                 return sync(event, repository);
             } else if (event.method === 'itemBalanceOf') {
@@ -60,12 +106,14 @@ function provideHandle(repository: Repository, staker: Staker) {
                         statusCode: 200,
                         body: x.toString(),
                     };
-                    return response;//receiveReward
+                    return response;//
                 });
             } else if (event.method === 'levelUp') {
                 return levelUp(event, repository);
             } else if (event.method === 'itemTotalSupply') {
                 return itemTotalSupply(event, repository);
+            }else if (event.method === 'itemGetAvailable') {
+                return itemGetAvailable(event, staker);
             } else if (event.method === 'stake') {
                 const address: string = event.address
                 const resource: string = event.resource
@@ -79,6 +127,7 @@ function provideHandle(repository: Repository, staker: Staker) {
                 return response;   
             }
         } catch (e){
+            console.error(e)
             const response = {
                 statusCode: 500,
                 body: e.Message,
@@ -337,10 +386,12 @@ async function levelUp (event, repository:Repository) {
 
         farm.inventory.balance = updatedBalance.toString()
 
-        repository.saveFarm(address, farm)
+        const updatedFarm = await repository.saveFarm(address, farm)
         return {
             statusCode: 200,
-            body: {}
+            body: {
+                farm: updatedFarm
+            }
         };
     } else {
         throw new Error("No Farm")
@@ -626,5 +677,48 @@ async function receiveReward(event: any, repository: Repository) {
     } else {
         throw new Error('reward is not positive: ' + reward.toString());
     }
+}
+
+async function itemGetAvailable(event: any, staker: Staker) {
+    const {address, resource} = event
+
+    const available = await staker.getAvailable(address, resource)
+
+    const response = {
+        statusCode: 200,
+        body: available,
+    };
+    return response;
+}
+
+async function userVerify(attempToLoginAddress: string, signature: string, repository: Repository) {
+    const user = await repository.getUser(attempToLoginAddress)
+    if (user) {
+        const msgBufferHex = ethUtil.bufferToHex(Buffer.from(user.nonce, 'utf8'));
+        const address = sigUtil.recoverPersonalSignature({
+          data: msgBufferHex,
+          sig: signature
+        });
+
+        // The signature verification is successful if the address found with
+        // ecrecover matches the initial publicAddress
+        if (address.toLowerCase() === attempToLoginAddress.toLowerCase()) {
+            const uuid = uuidv4()
+            user.session = uuid;
+            user.nonce = repository.generateUserNonce()
+            await repository.saveUser(user)
+            const response = {
+                statusCode: 200,
+                body: user.session,
+            };
+            return response;
+        } else {
+            Promise.reject("user " + attempToLoginAddress + " verification failed")
+        }
+
+    } else {
+        Promise.reject("user " + attempToLoginAddress + "doesnt exist")
+    }
+
 }
 

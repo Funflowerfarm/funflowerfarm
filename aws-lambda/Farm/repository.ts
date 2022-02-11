@@ -2,6 +2,10 @@
 
 import BigNumber from 'bignumber.js';
 import {Farm} from './farm'
+import {User} from './User'
+const { DateTime } = require("luxon");
+
+
 
 const access = 'AKIASXZ3APWM7CLXODHH'
 const key = 'RVVA7KAqUV4bQe5d44Rkjkfrj5veslK+yWcKJqpN'
@@ -23,8 +27,58 @@ const supplySecondary = 'Supply';
 
 const farmCounter = 'FarmCounter';
 
+const userPrimaryKey = 'farm-game/User';
+
 
 export class Repository {
+
+    generateUserNonce(): string {
+      return String(Math.floor(Math.random() * 1000000))
+    }
+
+    async saveUser(user: User) {
+      await dynamo
+      .put({
+        TableName: farmGameTable,
+        Item: {
+          p: userPrimaryKey,
+          s: user.address.toLowerCase(),
+          user: user
+        }
+      })
+      .promise();
+    }
+
+    async createUser(address: string): Promise<User> {
+      const nonce = this.generateUserNonce()
+      const newUser = new User()
+      newUser.address = address.toLowerCase()
+      newUser.nonce = '' + nonce
+      newUser.createdAt = DateTime.now().toString();
+      newUser.lastLogin = DateTime.now().toString();
+      
+      await this.saveUser(newUser)
+      
+      return newUser;
+    }
+
+    async getUser(address: string) : Promise<User | undefined> {
+      const result = await dynamo
+      .get({
+        TableName: farmGameTable,
+        Key: {
+          p: userPrimaryKey,
+          s: address.toLowerCase()
+        }
+      })
+      .promise();
+    
+      if (result.Item) {
+        return result.Item.user as User
+      } else {
+        return undefined
+      }
+    }
 
     async getFarmCount() : Promise<number> {
       const result = await dynamo
@@ -120,8 +174,8 @@ export class Repository {
       await this.incFarmCount()
   }
 
-  async saveFarm(address: string, farm : Farm) {
-    return dynamo
+  async saveFarm(address: string, farm : Farm): Promise<Farm> {
+    await dynamo
     .put({
       TableName: farmGameTable,
       Item: {
@@ -131,6 +185,7 @@ export class Repository {
       }
     })
     .promise(); 
+    return farm;
 }
 
 async totalSupply(): Promise<BigNumber> {

@@ -36,7 +36,7 @@ export const Blacksmith: React.FC<Props> = ({
 }) => {
   const [showModal, setShowModal] = React.useState(false);
 
-  const [tab, setTab] = React.useState<"Craft" | "NFTs" | "Community">(
+  const [tab, setTab] = React.useState<"Craft" | "NFTs" /*| "Community"*/>(
     "Craft"
   );
 
@@ -86,24 +86,7 @@ export const Blacksmith: React.FC<Props> = ({
               )}
             </div>
 
-            <div
-              className={`inventory-tab ${
-                tab === "Community" && "active-tab"
-              }`}
-              onClick={() => setTab("Community")}
-            >
-              <img src={man} alt="basket" className="tab-icon" />
-              <span>Community</span>
-              {tab === "Community" && (
-                <>
-                  <img id="panel-left-edge" src={leftEdgeInner} />
-                  <img id="panel-right-edge" src={rightEdgeInner} />
-                  <img id="panel-top-edge" src={topEdgeInner} />
-                  <img id="panel-top-left" src={topLeftInner} />
-                  <img id="panel-top-right" src={topRightInner} />
-                </>
-              )}
-            </div>
+
           </div>
           {tab === "Craft" && (
             <Tools
@@ -123,15 +106,7 @@ export const Blacksmith: React.FC<Props> = ({
               level={level}
             />
           )}
-          {tab === "Community" && (
-            <CommunityCrafting
-              onClose={() => setShowModal(false)}
-              inventory={inventory}
-              totalItemSupplies={totalItemSupplies}
-              balance={balance}
-              level={level}
-            />
-          )}
+
         </Panel>
       </Modal>
       <div
