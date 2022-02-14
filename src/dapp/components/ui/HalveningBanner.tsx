@@ -58,12 +58,14 @@ export const Banner: React.FC = () => {
           prices will be divided by {nextHalvingThreshold.halveningRate}.
           Be prepared!
         </span>
+{/*
         <a
           href="https://docs.sunflower-farmers.com/tokenomics#the-halvening"
           target="_blank"
         >
           Read more
         </a>
+*/}
       </div>
       <img
         src={closeIcon}

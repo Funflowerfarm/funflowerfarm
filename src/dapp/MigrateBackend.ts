@@ -143,6 +143,10 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
         })
      }
 
+     function collectEggs(args: any[]): any {
+      return sendPostWithPromi(args, 'collectEggs', {})
+    }
+
       
 
     const methods  = Object.keys(tokenContract.methods)
@@ -189,8 +193,10 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
                       result = levelUp(sendArgs);
                     } else if (m === 'stake') {
                       result = stake(args, sendArgs);
+                    } else if (m === 'collectEggs') {
+                      result = collectEggs(sendArgs);
                     } else {
-                      //result = target(...sendArgs)//
+                      //result = target(...sendArgs)// 
                       throw new Error("MigrateBackendFarm: Method should go to backend: " + m )
                     }
                     if(DBUG) console.log(`result MigrateBackendFarm send ${m}`, result)
@@ -345,3 +351,5 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
     SESSION_TOKEN,
     SESSION_ADDRESS
   }
+
+

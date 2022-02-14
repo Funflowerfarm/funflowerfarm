@@ -157,12 +157,16 @@ export const NFTs: React.FC<Props> = ({
         <div id="inventory">
           <InventoryItems inventory={inventory} />
         </div>
+
+        {/*
         <a
           href="https://docs.sunflower-farmers.com/crafting-guide"
           target="_blank"
         >
           <h3 className="current-price-supply-demand">Read more</h3>
         </a>
+        */}
+
       </div>
       <div id="recipe">
         {selectedRecipe.supply && !isNaN(amountLeft) && (
@@ -210,6 +214,7 @@ export const NFTs: React.FC<Props> = ({
         <div id="craft-action">{Action()}</div>
         {selectedRecipe.openSeaLink && (
           <span id="recipe-description">
+            {/*
             <a
               target="_blank"
               href={selectedRecipe.openSeaLink}
@@ -217,6 +222,7 @@ export const NFTs: React.FC<Props> = ({
             >
               View on OpenSea
             </a>
+            */}
           </span>
         )}
       </div>

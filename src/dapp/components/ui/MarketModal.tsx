@@ -75,13 +75,13 @@ export const MarketModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <p className="current-price-info">No more halvening events!</p>
             )}
           </div>
-
+{/*}
           <a href="https://docs.sunflower-farmers.com/tokenomics">
             <h3 className="current-price-supply-demand">
               Read more about our tokenomics here
             </h3>
           </a>
-
+            */ }
           {totalSupply > 0 ? (
             <>
               <div>

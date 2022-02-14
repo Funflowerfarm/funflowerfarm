@@ -149,7 +149,7 @@ export const Chickens: React.FC<Props> = ({ inventory }) => {
                       </span>
                     </span>
                   </Button>
-                )}
+                )}{/*
                 <a
                   href="https://docs.sunflower-farmers.com/resources"
                   target="_blank"
@@ -157,7 +157,7 @@ export const Chickens: React.FC<Props> = ({ inventory }) => {
                   <h3 className="current-price-supply-demand">
                     Read more
                   </h3>
-                </a>
+                </a>*/}
               </div>
             </div>
           </Panel>

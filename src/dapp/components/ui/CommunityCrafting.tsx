@@ -186,6 +186,7 @@ export const CommunityCrafting: React.FC<Props> = ({
             ))}
           </div>
         </div>
+        {/*
         <div id="community-footer">
           <a
             href="https://docs.sunflower-farmers.com/crafting-guide#crowd-sourced-crafting"
@@ -193,7 +194,7 @@ export const CommunityCrafting: React.FC<Props> = ({
           >
             <h3 className="current-price-supply-demand">Read more</h3>
           </a>
-        </div>
+        </div>*/}
       </div>
       <div id="recipe">
         <span className={`recipe-type recipe-nft`}>NFT</span>

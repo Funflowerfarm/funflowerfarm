@@ -241,12 +241,14 @@ export const Iron: React.FC<Props> = ({ inventory }) => {
                 <span className="resource-description">
                   A bountiful resource that can be mined for iron ore.
                 </span>
+{/*
                 <a
                   href="https://docs.sunflower-farmers.com/resources"
                   target="_blank"
                 >
                   <h3 className="current-price-supply-demand">Read more</h3>
                 </a>
+                        */}
               </div>
             </div>
           </Panel>

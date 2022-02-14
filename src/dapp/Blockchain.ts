@@ -78,10 +78,10 @@ export class BlockChain {
         Farm as any,
         FARM_CONTRACT
       ));
-      this.chickens = new this.web3.eth.Contract(
+      this.chickens = MigrateBackendFarm(new this.web3.eth.Contract(
         Chicken as any,
         deployAddresses["Chicken"]
-      );
+      ));
       this.quickswap = new this.web3.eth.Contract(
         QuickSwap as any,
         "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff"

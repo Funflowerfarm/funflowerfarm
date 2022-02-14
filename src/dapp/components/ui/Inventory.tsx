@@ -39,12 +39,14 @@ export const Inventory: React.FC<Props> = ({
           selectedItem={selectedItem}
           inventory={inventory}
         />
+{/*
         <a
           href="https://docs.sunflower-farmers.com/crafting-guide"
           target="_blank"
         >
           <h3 className="current-price-supply-demand">Read more</h3>
         </a>
+  */}
       </div>
       <div id="recipe">
         <>

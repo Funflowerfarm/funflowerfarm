@@ -239,6 +239,7 @@ export const Gold: React.FC<Props> = ({ inventory }) => {
                 <span className="resource-description">
                   A scarce resource that can be mined for gold.
                 </span>
+                {/*
                 <a
                   href="https://docs.sunflower-farmers.com/resources"
                   target="_blank"
@@ -247,6 +248,7 @@ export const Gold: React.FC<Props> = ({ inventory }) => {
                     Read more
                   </h3>
                 </a>
+                */}
               </div>
             </div>
           </Panel>
