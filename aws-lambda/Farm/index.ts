@@ -17,6 +17,7 @@ import {Ingredient, Recipe, recipes, items} from './crafting'
 
 function provideHandle(repository: Repository, staker: Staker) {
     return async (event) => {
+        event.address = event.address.toLowerCase()
         try {
             console.log(`event m ${event.method} s ${event.authToken}`)
             if (event.method === 'userNonce') {
@@ -106,14 +107,24 @@ function provideHandle(repository: Repository, staker: Staker) {
                         statusCode: 200,
                         body: x.toString(),
                     };
-                    return response;//
+                    return response;
+                });
+            } else if (event.method === 'hatchTime') {
+                return hatchTime(event, repository).then(x =>{
+                    const response = {
+                        statusCode: 200,
+                        body: x
+                    };
+                    return response;
                 });
             } else if (event.method === 'levelUp') {
                 return levelUp(event, repository);
             } else if (event.method === 'itemTotalSupply') {
                 return itemTotalSupply(event, repository);
-            }else if (event.method === 'itemGetAvailable') {
+            } else if (event.method === 'itemGetAvailable') {
                 return itemGetAvailable(event, staker);
+            } else if (event.method === 'collectEggs') {
+                return collectEggs(event, repository);
             } else if (event.method === 'stake') {
                 const address: string = event.address
                 const resource: string = event.resource
@@ -720,5 +731,33 @@ async function userVerify(attempToLoginAddress: string, signature: string, repos
         Promise.reject("user " + attempToLoginAddress + "doesnt exist")
     }
 
+}
+
+async function collectEggs(event: any, repository: Repository) {
+    const address = event.address
+    const f = await repository.collectEggs(address);
+
+    const response = {
+        statusCode: 200,
+        body: {
+            farm: f
+        },
+    };
+    return response;
+}
+
+ async function hatchTime(event: any, repository: Repository): Promise<string> {
+    const address = event.address
+    const farm = await repository.getFarm(address)
+
+    if (!farm || !farm.recoveryTime) {
+        return String(nowInSeconds() - 60 * 60 * 24)
+    }
+    const recoveryTime:number = farm.recoveryTime["Chicken"]
+    if (recoveryTime) {
+        return String(recoveryTime - 60 * 60 * 24)
+    } else {
+        return String(nowInSeconds() - 60 * 60 * 24)
+    }
 }
 

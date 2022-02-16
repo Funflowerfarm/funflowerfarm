@@ -247,7 +247,7 @@ export const Farm: React.FC = () => {
         inventory={inventory}
         totalItemSupplies={totalItemSupplies}
       />
-      <AudioPlayer />
+      {/*<AudioPlayer />*/}
       <span id="save-button">
         <Panel hasInner={false}>
           <Button

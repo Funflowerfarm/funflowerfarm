@@ -52,7 +52,7 @@ class Wood {
         
         const secondsRecovered = this.RECOVERY_SECONDS.minus(new BigNumber(diff))
 
-        return this.STRENGTH.multipliedBy(secondsRecovered).dividedBy(this.RECOVERY_SECONDS)
+        return this.STRENGTH.multipliedBy(secondsRecovered).dividedToIntegerBy(this.RECOVERY_SECONDS)
     }
 
 

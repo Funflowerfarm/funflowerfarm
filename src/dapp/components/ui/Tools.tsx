@@ -167,7 +167,7 @@ export const Tools: React.FC<Props> = ({
 */}
       </div>
       <div id="recipe">
-        <span className={`recipe-type recipe-erc20`}>ERC20</span>
+        {/*<span className={`recipe-type recipe-erc20`}>ERC20</span>*/}
         <span id="recipe-title">{selectedRecipe.name}</span>
         <div id="crafting-item">
           <img src={selectedRecipe.image} />

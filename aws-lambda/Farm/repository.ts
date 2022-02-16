@@ -4,16 +4,18 @@ import BigNumber from 'bignumber.js';
 import {Farm} from './farm'
 import {User} from './User'
 const { DateTime } = require("luxon");
+import { TransactWriteItemList, TransactWriteItem } from 'aws-sdk/clients/dynamodb';
 
 
 
 const access = 'AKIASXZ3APWM7CLXODHH'
 const key = 'RVVA7KAqUV4bQe5d44Rkjkfrj5veslK+yWcKJqpN'
 
-const AWS = require("aws-sdk");
-AWS.config.update({region:'us-west-1',
-accessKeyId: access,
-accessSecretKey: key
+//const AWS = require("aws-sdk");
+import AWS from 'aws-sdk';
+import { nowInSeconds } from '.';
+
+AWS.config.update({region:'us-west-1'
 });
 
 const dynamo = new AWS.DynamoDB.DocumentClient();
@@ -31,6 +33,70 @@ const userPrimaryKey = 'farm-game/User';
 
 
 export class Repository {
+
+    async collectEggs(address: string) : Promise<Farm> {
+      /*  uint chickens = super.balanceOf(msg.sender);
+    require(chickens > 0, "You have no chickens");
+    require(block.timestamp - _hatchedAt[msg.sender] > 60 * 60 * 24, "You have to wait 24 hours before you can collect eggs");
+
+    // It is actually ERC721 but same principle
+    uint coop = ERC20(_coop).balanceOf(msg.sender);
+
+    uint multiplier = 1;
+    if (coop >= 1) {
+      multiplier = 3;
+    }
+
+    _hatchedAt[msg.sender] = block.timestamp;
+
+    Egg(_egg).mint(msg.sender, chickens * multiplier);*/
+
+    const recoveryTimeEgg = 60 * 60 * 24
+
+    const farm = await this.getFarm(address)
+
+    let lastRecovery = farm.recoveryTime["Chicken"] 
+    if (!lastRecovery) {
+      lastRecovery = nowInSeconds()
+    }
+    if (nowInSeconds() <= lastRecovery) {
+      Promise.reject("You have to wait 24 hours before you can collect eggs")
+    }
+
+    if (!farm.inventory["Chicken"]) {
+      Promise.reject("No Chicken")
+    }
+
+    const nChickens = new BigNumber(farm.inventory["Chicken"]);
+
+    let multiplier = new BigNumber(1)
+
+    if (nChickens.isZero()) {
+      Promise.reject("No Chicken")
+    }
+
+    if (farm.inventory["Chicken coop"]) {
+      const nCoop = new BigNumber(farm.inventory["Chicken coop"]);
+      if (nCoop.gte(new BigNumber(1))) {
+        multiplier = new BigNumber(3)
+      }
+    }
+
+    const eggs = nChickens.multipliedBy(multiplier)
+    
+    if (farm.inventory["Egg"]) {
+      let current = new BigNumber(farm.inventory["Egg"])
+      current = current.plus(eggs)
+      farm.inventory["Egg"] = current.toString()
+    } else {
+      farm.inventory["Egg"] = eggs.toString()
+    }
+
+    farm.recoveryTime["Chicken"] = nowInSeconds() + recoveryTimeEgg
+
+    await this.saveFarm(address, farm)
+    return farm
+    }
 
     generateUserNonce(): string {
       return String(Math.floor(Math.random() * 1000000))
@@ -170,8 +236,13 @@ export class Repository {
 }
 
   async createFarm(address: string, newFarm : Farm) {
-      await this.saveFarm(address, newFarm)
-      await this.incFarmCount()
+      const farm = await this.getFarm(address)
+      if(!farm) {
+        await this.saveFarm(address, newFarm)
+        await this.incFarmCount()
+      } else {
+        Promise.reject("Already exist a farm for  adddress " + address)
+      }
   }
 
   async saveFarm(address: string, farm : Farm): Promise<Farm> {

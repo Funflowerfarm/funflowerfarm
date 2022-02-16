@@ -147,6 +147,18 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
       return sendPostWithPromi(args, 'collectEggs', {})
     }
 
+    
+    function hatchTime(m: string, args: any[]): any {
+      return axios.post('/prod/farm-game/farm', AddCommon({
+        method: m,
+        address: args[0].from
+      })).then( r => {
+        return new Promise(async (resolve, reject) => {
+          resolve(r.data.body)
+        })
+      })
+    }
+
       
 
     const methods  = Object.keys(tokenContract.methods)
@@ -160,12 +172,14 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
             //
             const resultProxyCall = new Proxy(result.call, {
                 apply(target, thisArg, args) {
-                    //console.log(`MigrateBackendFarm call ${target} ${m}`, args)
+                    //console.log(`MigrateBackendFarm call ${target} ${m}`, args) hatchTime
                     let result = null
                     if (m === 'getLand') {
                         result = getLand(m, args)
                     } else if (m === 'myReward') {
                       result = myReward(m, args)
+                    } else if (m === 'hatchTime') {
+                      result = hatchTime(m, args)
                     } else {
                       throw new Error("MigrateBackendFarm: Method should go to backend: " + m )
                        // result = target(...args)
@@ -351,5 +365,6 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
     SESSION_TOKEN,
     SESSION_ADDRESS
   }
+
 
 

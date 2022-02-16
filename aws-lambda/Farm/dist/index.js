@@ -72,35 +72,38 @@ function provideHandle(repository, staker) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 16, , 17]);
+                    event.address = event.address.toLowerCase();
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 17, , 18]);
                     console.log("event m ".concat(event.method, " s ").concat(event.authToken));
-                    if (!(event.method === 'userNonce')) return [3 /*break*/, 4];
+                    if (!(event.method === 'userNonce')) return [3 /*break*/, 5];
                     address = event.address.toLowerCase();
                     return [4 /*yield*/, repository.getUser(address)];
-                case 1:
-                    user = _a.sent();
-                    if (!!user) return [3 /*break*/, 3];
-                    return [4 /*yield*/, repository.createUser(address)];
                 case 2:
                     user = _a.sent();
-                    _a.label = 3;
+                    if (!!user) return [3 /*break*/, 4];
+                    return [4 /*yield*/, repository.createUser(address)];
                 case 3:
+                    user = _a.sent();
+                    _a.label = 4;
+                case 4:
                     response = {
                         statusCode: 200,
                         body: user.nonce,
                     };
                     return [2 /*return*/, response];
-                case 4:
-                    if (!(event.method === 'userVerify')) return [3 /*break*/, 6];
+                case 5:
+                    if (!(event.method === 'userVerify')) return [3 /*break*/, 7];
                     debugger;
                     address = event.address.toLowerCase();
                     signature = event.signature;
                     return [4 /*yield*/, userVerify(address, signature, repository)];
-                case 5:
+                case 6:
                     response = _a.sent();
                     return [2 /*return*/, response];
-                case 6: return [4 /*yield*/, repository.getUser(event.address)];
-                case 7:
+                case 7: return [4 /*yield*/, repository.getUser(event.address)];
+                case 8:
                     toVerify = _a.sent();
                     if (!toVerify) {
                         response = {
@@ -116,10 +119,10 @@ function provideHandle(repository, staker) {
                         };
                         return [2 /*return*/, response];
                     }
-                    if (!(event.method === 'getLand')) return [3 /*break*/, 9];
+                    if (!(event.method === 'getLand')) return [3 /*break*/, 10];
                     address = event.address;
                     return [4 /*yield*/, repository.getFarm(address)];
-                case 8:
+                case 9:
                     farm = _a.sent();
                     if (farm) {
                         response = {
@@ -135,15 +138,15 @@ function provideHandle(repository, staker) {
                         };
                         return [2 /*return*/, response];
                     }
-                    return [3 /*break*/, 15];
-                case 9:
-                    if (!(event.method === 'createFarm')) return [3 /*break*/, 10];
-                    return [2 /*return*/, createFarm(event, repository)];
+                    return [3 /*break*/, 16];
                 case 10:
-                    if (!(event.method === 'token/balanceOf')) return [3 /*break*/, 12];
+                    if (!(event.method === 'createFarm')) return [3 /*break*/, 11];
+                    return [2 /*return*/, createFarm(event, repository)];
+                case 11:
+                    if (!(event.method === 'token/balanceOf')) return [3 /*break*/, 13];
                     address = event.address;
                     return [4 /*yield*/, repository.getFarm(address)];
-                case 11:
+                case 12:
                     farm = _a.sent();
                     balance = '0';
                     if (farm) {
@@ -154,13 +157,13 @@ function provideHandle(repository, staker) {
                         body: balance,
                     };
                     return [2 /*return*/, response];
-                case 12:
-                    if (!(event.method === 'totalSupply')) return [3 /*break*/, 14];
-                    return [4 /*yield*/, totalSupply(repository)];
                 case 13:
+                    if (!(event.method === 'totalSupply')) return [3 /*break*/, 15];
+                    return [4 /*yield*/, totalSupply(repository)];
+                case 14:
                     r = _a.sent();
                     return [2 /*return*/, r];
-                case 14:
+                case 15:
                     if (event.method === 'sync') {
                         return [2 /*return*/, sync(event, repository)];
                     }
@@ -179,7 +182,16 @@ function provideHandle(repository, staker) {
                                     statusCode: 200,
                                     body: x.toString(),
                                 };
-                                return response; //
+                                return response;
+                            })];
+                    }
+                    else if (event.method === 'hatchTime') {
+                        return [2 /*return*/, hatchTime(event, repository).then(function (x) {
+                                var response = {
+                                    statusCode: 200,
+                                    body: x
+                                };
+                                return response;
                             })];
                     }
                     else if (event.method === 'levelUp') {
@@ -190,6 +202,9 @@ function provideHandle(repository, staker) {
                     }
                     else if (event.method === 'itemGetAvailable') {
                         return [2 /*return*/, itemGetAvailable(event, staker)];
+                    }
+                    else if (event.method === 'collectEggs') {
+                        return [2 /*return*/, collectEggs(event, repository)];
                     }
                     else if (event.method === 'stake') {
                         address = event.address;
@@ -204,9 +219,9 @@ function provideHandle(repository, staker) {
                         };
                         return [2 /*return*/, response];
                     }
-                    _a.label = 15;
-                case 15: return [3 /*break*/, 17];
-                case 16:
+                    _a.label = 16;
+                case 16: return [3 /*break*/, 18];
+                case 17:
                     e_1 = _a.sent();
                     console.error(e_1);
                     response = {
@@ -214,7 +229,7 @@ function provideHandle(repository, staker) {
                         body: e_1.Message,
                     };
                     return [2 /*return*/, response];
-                case 17: return [2 /*return*/];
+                case 18: return [2 /*return*/];
             }
         });
     }); };
@@ -868,6 +883,52 @@ function userVerify(attempToLoginAddress, signature, repository) {
                     Promise.reject("user " + attempToLoginAddress + "doesnt exist");
                     _a.label = 6;
                 case 6: return [2 /*return*/];
+            }
+        });
+    });
+}
+function collectEggs(event, repository) {
+    return __awaiter(this, void 0, void 0, function () {
+        var address, f, response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    address = event.address;
+                    return [4 /*yield*/, repository.collectEggs(address)];
+                case 1:
+                    f = _a.sent();
+                    response = {
+                        statusCode: 200,
+                        body: {
+                            farm: f
+                        },
+                    };
+                    return [2 /*return*/, response];
+            }
+        });
+    });
+}
+function hatchTime(event, repository) {
+    return __awaiter(this, void 0, void 0, function () {
+        var address, farm, recoveryTime;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    address = event.address;
+                    return [4 /*yield*/, repository.getFarm(address)];
+                case 1:
+                    farm = _a.sent();
+                    if (!farm || !farm.recoveryTime) {
+                        return [2 /*return*/, String(nowInSeconds() - 60 * 60 * 24)];
+                    }
+                    recoveryTime = farm.recoveryTime["Chicken"];
+                    if (recoveryTime) {
+                        return [2 /*return*/, String(recoveryTime - 60 * 60 * 24)];
+                    }
+                    else {
+                        return [2 /*return*/, String(nowInSeconds() - 60 * 60 * 24)];
+                    }
+                    return [2 /*return*/];
             }
         });
     });

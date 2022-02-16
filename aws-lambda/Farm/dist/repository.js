@@ -46,12 +46,12 @@ var User_1 = require("./User");
 var DateTime = require("luxon").DateTime;
 var access = 'AKIASXZ3APWM7CLXODHH';
 var key = 'RVVA7KAqUV4bQe5d44Rkjkfrj5veslK+yWcKJqpN';
-var AWS = require("aws-sdk");
-AWS.config.update({ region: 'us-west-1',
-    accessKeyId: access,
-    accessSecretKey: key
+//const AWS = require("aws-sdk");
+var aws_sdk_1 = __importDefault(require("aws-sdk"));
+var _1 = require(".");
+aws_sdk_1.default.config.update({ region: 'us-west-1'
 });
-var dynamo = new AWS.DynamoDB.DocumentClient();
+var dynamo = new aws_sdk_1.default.DynamoDB.DocumentClient();
 var farmGameTable = 'farm-game';
 var farmPrimaryKey = 'farm-game/Farm';
 var totalSupplyPrimaryKey = 'farm-game/TotalSupply';
@@ -61,6 +61,55 @@ var userPrimaryKey = 'farm-game/User';
 var Repository = /** @class */ (function () {
     function Repository() {
     }
+    Repository.prototype.collectEggs = function (address) {
+        return __awaiter(this, void 0, void 0, function () {
+            var recoveryTimeEgg, farm, lastRecovery, nChickens, multiplier, nCoop, eggs, current;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        recoveryTimeEgg = 60 * 60 * 24;
+                        return [4 /*yield*/, this.getFarm(address)];
+                    case 1:
+                        farm = _a.sent();
+                        lastRecovery = farm.recoveryTime["Chicken"];
+                        if (!lastRecovery) {
+                            lastRecovery = (0, _1.nowInSeconds)();
+                        }
+                        if ((0, _1.nowInSeconds)() <= lastRecovery) {
+                            Promise.reject("You have to wait 24 hours before you can collect eggs");
+                        }
+                        if (!farm.inventory["Chicken"]) {
+                            Promise.reject("No Chicken");
+                        }
+                        nChickens = new bignumber_js_1.default(farm.inventory["Chicken"]);
+                        multiplier = new bignumber_js_1.default(1);
+                        if (nChickens.isZero()) {
+                            Promise.reject("No Chicken");
+                        }
+                        if (farm.inventory["Chicken coop"]) {
+                            nCoop = new bignumber_js_1.default(farm.inventory["Chicken coop"]);
+                            if (nCoop.gte(new bignumber_js_1.default(1))) {
+                                multiplier = new bignumber_js_1.default(3);
+                            }
+                        }
+                        eggs = nChickens.multipliedBy(multiplier);
+                        if (farm.inventory["Egg"]) {
+                            current = new bignumber_js_1.default(farm.inventory["Egg"]);
+                            current = current.plus(eggs);
+                            farm.inventory["Egg"] = current.toString();
+                        }
+                        else {
+                            farm.inventory["Egg"] = eggs.toString();
+                        }
+                        farm.recoveryTime["Chicken"] = (0, _1.nowInSeconds)() + recoveryTimeEgg;
+                        return [4 /*yield*/, this.saveFarm(address, farm)];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, farm];
+                }
+            });
+        });
+    };
     Repository.prototype.generateUserNonce = function () {
         return String(Math.floor(Math.random() * 1000000));
     };
@@ -267,15 +316,24 @@ var Repository = /** @class */ (function () {
     };
     Repository.prototype.createFarm = function (address, newFarm) {
         return __awaiter(this, void 0, void 0, function () {
+            var farm;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.saveFarm(address, newFarm)];
+                    case 0: return [4 /*yield*/, this.getFarm(address)];
                     case 1:
-                        _a.sent();
-                        return [4 /*yield*/, this.incFarmCount()];
+                        farm = _a.sent();
+                        if (!!farm) return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.saveFarm(address, newFarm)];
                     case 2:
                         _a.sent();
-                        return [2 /*return*/];
+                        return [4 /*yield*/, this.incFarmCount()];
+                    case 3:
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        Promise.reject("Already exist a farm for  adddress " + address);
+                        _a.label = 5;
+                    case 5: return [2 /*return*/];
                 }
             });
         });

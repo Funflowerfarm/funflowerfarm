@@ -986,11 +986,11 @@ export class BlockChain {
   }
 
   public async loadEggCollectionTime() {
-   /* const time = await this.chickens.methods
+    const time = await this.chickens.methods
       .hatchTime(this.account)
       .call({ from: this.account });
-*/
-    return Number(/*time*/ 0);
+
+    return Number(time);
   }
 
   public async getTreeStrength() {

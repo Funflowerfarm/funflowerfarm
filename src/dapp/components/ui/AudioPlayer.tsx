@@ -46,7 +46,7 @@ export const AudioPlayer: React.FC = () => {
     }, [volume]);
 
     return (
-        <div id="audio-player-container"
+        <div id="audio-player-container" 
              onMouseEnter={ () => setOnHover(true)}
              onMouseLeave={()=> setOnHover(false)}
              style={{

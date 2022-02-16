@@ -92,7 +92,7 @@ var Wood = /** @class */ (function () {
         }
         var diff = recoveredAt - (0, index_1.nowInSeconds)();
         var secondsRecovered = this.RECOVERY_SECONDS.minus(new bignumber_js_1.default(diff));
-        return this.STRENGTH.multipliedBy(secondsRecovered).dividedBy(this.RECOVERY_SECONDS);
+        return this.STRENGTH.multipliedBy(secondsRecovered).dividedToIntegerBy(this.RECOVERY_SECONDS);
     };
     Wood.prototype.stake = function (address, amount) {
         return __awaiter(this, void 0, void 0, function () {
