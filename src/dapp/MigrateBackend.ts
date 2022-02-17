@@ -13,27 +13,29 @@ const SESSION_TOKEN = "SESSION_TOKEN"
 const SESSION_ADDRESS = "SESSION_ADDRESS"
 
 
+  function handleCall(r) {
+    return new Promise(async (resolve, reject) => {
+      if(r.data.statusCode == 500) {
+        reject(r.data)
+      } else {
+        resolve(r.data.body)
+      }
+    })
+  }
+
   function  MigrateBackendToken(tokenContract: any) : any {
     function balanceOf(args) {
         return axios.post('/prod/farm-game/farm', AddCommon({
             address: args[0].from,
             method: 'token/balanceOf'
           }))
-          .then(function (response) {
-            return new Promise(function(resolve, reject) {
-                 resolve(response.data.body);
-              });
-          })
+          .then(handleCall)
     }
 
       function totalSupply(m, args) {
     return axios.post('/prod/farm-game/farm', AddCommon({
         method: m
-      })).then( r => {
-        return new Promise(async (resolve, reject) => {
-          resolve(r.data.body)
-        })
-      })
+      })).then(handleCall)
 }
 
     const methods  = Object.keys(tokenContract.methods)
@@ -74,14 +76,18 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
   function  MigrateBackendFarm(tokenContract: any) : any {
 
     function sendPostWithPromi(sendArgs, method, args) {
-      const postPromise =  axios.post('/prod/farm-game/farm', AddCommon({...{
+      const postPromise =  axios.post(`/prod/farm-game/farm?m=${method}`, AddCommon({...{
         method: method,
         address: sendArgs[0].from
       }, ...args}));
       const promi = Web3PromiEvent()
-      postPromise.then(function() {
-        console.log(`create ${method} promise`, postPromise)
-        promi.eventEmitter.emit("receipt", { myReceipt : {}})
+      postPromise.then(function(response) {
+        console.log(`create ${method} promise response:`, response)
+        if(response.data.statusCode == 500) {
+          promi.eventEmitter.emit("error", response.data)
+        } else {
+          promi.eventEmitter.emit("receipt", { myReceipt : {}})
+        }
       })
       return promi.eventEmitter;
     }
@@ -120,27 +126,20 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
       return sendPostWithPromi(sendArgs, 'craft', {resource: resource, amount: amount})
     }
 
+ 
 
     function getLand(m, args) {
-      return axios.post('/prod/farm-game/farm', AddCommon({
+      return axios.post('/prod/farm-game/farm?method=' + m, AddCommon({
           method: m,
           address: args[0].from
-        })).then( r => {
-          return new Promise(async (resolve, reject) => {
-            resolve(r.data.body)
-          })
-        })
+        })).then(handleCall)
      }
 
      function myReward(m, args) {
       return axios.post('/prod/farm-game/farm', AddCommon({
           method: m,
           address: args[0].from
-        })).then( r => {
-          return new Promise(async (resolve, reject) => {
-            resolve(r.data.body)
-          })
-        })
+        })).then(handleCall)
      }
 
      function collectEggs(args: any[]): any {
@@ -152,11 +151,7 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
       return axios.post('/prod/farm-game/farm', AddCommon({
         method: m,
         address: args[0].from
-      })).then( r => {
-        return new Promise(async (resolve, reject) => {
-          resolve(r.data.body)
-        })
-      })
+      })).then(handleCall)
     }
 
       
@@ -243,11 +238,7 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
           resource: resource,
           method: 'itemBalanceOf'
         }))
-        .then(function (response) {
-          return new Promise(function(resolve, reject) {
-               resolve(response.data.body);
-            });
-        })
+        .then(handleCall)
   }
 
   function itemTotalSupply(args, resource) {
@@ -256,11 +247,7 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
         resource: resource,
         method: 'itemTotalSupply'
       }))
-      .then(function (response) {
-        return new Promise(function(resolve, reject) {
-             resolve(response.data.body);
-          });
-      })
+      .then(handleCall)
  }
 
  function getAvailable(args, resource) {
@@ -269,11 +256,7 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
       resource: resource,
       method: 'itemGetAvailable'
     }))
-    .then(function (response) {
-      return new Promise(function(resolve, reject) {
-           resolve(response.data.body);
-        });
-    })
+    .then(handleCall)
   }
 
     const methods  = Object.keys(tokenContract.methods)
@@ -310,24 +293,20 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
   }
 
   async function LoginToCentralizeBackend(address:string): Promise<string> {
-   const nonce =  await axios.post('/prod/farm-game/farm', AddCommon({
+   const nonce =  await axios.post('/prod/farm-game/farm', {
       address: address,
       method: 'userNonce'
-    }))
-    .then(function (response) {
-      return new Promise(function(resolve, reject) {
-           resolve(response.data.body);
-        });
     })
+    .then(handleCall)
     return nonce
   }
 
   async function LoginToCentralizeBackendSignature(address:string, signature:string): Promise<string> {
-    const nonce =  await axios.post('/prod/farm-game/farm', AddCommon({
+    const nonce =  await axios.post('/prod/farm-game/farm', {
        address: address,
        signature: signature,
        method: 'userVerify'
-     }))
+     })
      .then(function (response) {
        return new Promise(function(resolve, reject) {
          const authToken = response.data.body

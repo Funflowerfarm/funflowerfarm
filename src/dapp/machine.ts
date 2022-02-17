@@ -217,7 +217,7 @@ export const blockChainMachine = createMachine<
         onError: {
           target: "failure",
           actions: assign({
-            errorCode: (context, event) => event.data.message,
+            errorCode: function (context, event) { return  event.data.message},
           }),
         },
       },
@@ -387,7 +387,7 @@ export const blockChainMachine = createMachine<
         onError: {
           target: "saveFailure",
           actions: assign({
-            errorCode: (context, event) => event.data.message,
+            errorCode: function (context, event) {return event.data.message},
           }),
         },
       },

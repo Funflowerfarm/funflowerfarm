@@ -2,8 +2,13 @@
   "compilerOptions": {
     "outDir": "./dist",
     "allowJs": true,
-    "target": "es5",
-    "esModuleInterop": true
+    "target": "es2020",
+    "esModuleInterop": true,
+    "lib": ["es2020"],
+    "module": "commonjs",
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["./**/*"]
 }

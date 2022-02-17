@@ -1,7 +1,7 @@
 
 import * as ethUtil from 'ethereumjs-util';
 import {v4 as uuidv4} from 'uuid';
-import * as sigUtil from 'eth-sig-util';
+import * as sigUtil from '@metamask/eth-sig-util';
 
 
 import { Repository } from './repository';
@@ -77,7 +77,7 @@ function provideHandle(repository: Repository, staker: Staker) {
                 }
             } else if (event.method === 'createFarm') {
 
-                return createFarm(event, repository);
+                return await createFarm(event, repository);
             } else if (event.method === 'token/balanceOf') {
                 const address = event.address;
                 const farm: Farm = await repository.getFarm(address)
@@ -94,15 +94,15 @@ function provideHandle(repository: Repository, staker: Staker) {
                 const r =  await  totalSupply(repository);
                 return r;
             } else if (event.method === 'sync') {
-                return sync(event, repository);
+                return await sync(event, repository);
             } else if (event.method === 'itemBalanceOf') {
-                return itemBalanceOf(event, repository);
+                return await itemBalanceOf(event, repository);
             } else if (event.method === 'craft') {
-                return craft(event, repository);
+                return await craft(event, repository);
             } else if (event.method === 'receiveReward') {
-                return receiveReward(event, repository);
+                return await receiveReward(event, repository);
             } else if (event.method === 'myReward') {
-                return myReward(event, repository).then(x =>{
+                return await myReward(event, repository).then(x =>{
                     const response = {
                         statusCode: 200,
                         body: x.toString(),
@@ -110,7 +110,7 @@ function provideHandle(repository: Repository, staker: Staker) {
                     return response;
                 });
             } else if (event.method === 'hatchTime') {
-                return hatchTime(event, repository).then(x =>{
+                return await hatchTime(event, repository).then(x =>{
                     const response = {
                         statusCode: 200,
                         body: x
@@ -118,18 +118,18 @@ function provideHandle(repository: Repository, staker: Staker) {
                     return response;
                 });
             } else if (event.method === 'levelUp') {
-                return levelUp(event, repository);
+                return await  levelUp(event, repository);
             } else if (event.method === 'itemTotalSupply') {
-                return itemTotalSupply(event, repository);
+                return await itemTotalSupply(event, repository);
             } else if (event.method === 'itemGetAvailable') {
-                return itemGetAvailable(event, staker);
+                return await itemGetAvailable(event, staker);
             } else if (event.method === 'collectEggs') {
-                return collectEggs(event, repository);
+                return await collectEggs(event, repository);
             } else if (event.method === 'stake') {
                 const address: string = event.address
                 const resource: string = event.resource
                 const amount: string = event.amount
-                return staker.stake(address, resource, amount)
+                return await  staker.stake(address, resource, amount)
             } else {
                 const response = {
                     statusCode: 200,
@@ -141,7 +141,7 @@ function provideHandle(repository: Repository, staker: Staker) {
             console.error(e)
             const response = {
                 statusCode: 500,
-                body: e.Message,
+                message: e.message
             };
             return response;  
         }
@@ -454,7 +454,7 @@ async function sync (event, repository:Repository) {
         } else if(act.action == Action.Harvest) {
             const square:Square = farm.land[act.landIndex]
             if (square.fruit == Fruit.None) {
-                throw new Error(`No Fruit`)
+                throw new Error(`No Fruit in land index ${act.landIndex}`)
             }
             const duration:number = act.createdAt - square.createdAt
             const secondsToHarvest:number = getHarvestSeconds(square.fruit);
@@ -480,6 +480,8 @@ async function sync (event, repository:Repository) {
     farm.inventory.balance = balance.toString()
     farm.syncedAt = nowInSeconds()
 
+    farm["bignumberTest2"] = BigInt('10000000000000').valueOf()
+    console.log('bgiint', farm["bignumberTest2"])
     await repository.saveFarm(address, farm)
 
     return {
@@ -708,7 +710,7 @@ async function userVerify(attempToLoginAddress: string, signature: string, repos
         const msgBufferHex = ethUtil.bufferToHex(Buffer.from(user.nonce, 'utf8'));
         const address = sigUtil.recoverPersonalSignature({
           data: msgBufferHex,
-          sig: signature
+          signature: signature
         });
 
         // The signature verification is successful if the address found with

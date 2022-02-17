@@ -183,7 +183,7 @@ export class BlockChain {
         await this.loadFarm();
       } catch(e) {
         console.log("error in  loading farm", e)
-        //throw e;
+        throw e;
       }
       } else {
         throw new Error("WRONG_CHAIN");
@@ -207,14 +207,19 @@ export class BlockChain {
     }
   }
   async login() {
-    if (localStorage.getItem(SESSION_TOKEN)) return 
+    if (localStorage.getItem(SESSION_ADDRESS) 
+    && localStorage.getItem(SESSION_TOKEN) 
+    && localStorage.getItem(SESSION_ADDRESS) === this.account) {
+      console.log(`account ${this.account} already logged`)
+     return
+    } 
 
     const nonce  =  await LoginToCentralizeBackend(this.account)
-    console.log(`login nonce ${nonce} ` + typeof  nonce)
+    console.log(`account ${this.account} login nonce ${nonce} ` + typeof  nonce)
     const signedMessage = await this.web3.eth.personal.sign(nonce, this.account, '')
-    console.log(`signed message ` + signedMessage)
+    console.log(`account ${this.account} signed message ` + signedMessage)
     const session = await LoginToCentralizeBackendSignature(this.account, signedMessage)
-    console.log("session " + session)
+    console.log(`account ${this.account} session ` + session)
   }
 
   public async loadFarm() {
@@ -260,8 +265,8 @@ export class BlockChain {
     this.goldStrength = gold;
     this.eggCollectionTime = hatchTime;
   } catch(e) {
-    debugger;
     console.log('Promise.all error', e)
+    throw e;
   }
     await this.cacheTotalSupply();
   }

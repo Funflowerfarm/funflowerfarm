@@ -1,62 +1,53 @@
 "use strict";
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_INVENTORY = exports.items = exports.recipes = void 0;
 //backend
-var deployAddresses_1 = require("./utils/deployAddresses");
-var Token = "../../abis/Token.json";
-var Farm = "../../abis/Farm.json";
-var Axe = "../../abis/Axe.json";
-var Wood = "../../abis/Wood.json";
-var Pickaxe = "../../abis/Pickaxe.json";
-var StonePickaxe = "../../abis/StonePickaxe.json";
-var IronPickaxe = "../../abis/IronPickaxe.json";
-var Stone = "../../abis/Stone.json";
-var Gold = "../../abis/Gold.json";
-var Egg = "../../abis/Egg.json";
-var Chicken = "../../abis/Chicken.json";
-var Iron = "../../abis/Iron.json";
-var Statue = "../../abis/Statue.json";
-var ChristmasTree = "../../abis/ChristmasTree.json";
-var Scarecrow = "../../abis/Scarecrow.json";
-var PotatoStatue = "../../abis/PotatoStatue.json";
-var FarmCat = "../../abis/FarmCat.json";
-var FarmDog = "../../abis/FarmDog.json";
-var Gnome = "../../abis/Gnome.json";
-var pickaxe = "../images/ui/pickaxe.png";
-var woodPickaxe = "../images/ui/wood_pickaxe.png";
-var ironPickaxe = "../images/ui/iron_pickaxe.png";
-var axe = "../images/ui/axe.png";
-var hammer = "../images/ui/hammer.png";
-var rod = "../images/ui/rod.png";
-var sword = "../images/ui/sword.png";
-var wood = "../images/ui/wood.png";
-var iron = "../images/ui/ore.png";
-var goldOre = "../images/ui/gold_ore.png";
-var stone = "../images/ui/rock.png";
-var gnome = "../images/ui/gnome.png";
-var chicken = "../images/ui/chicken.png";
-var egg = "../images/ui/egg.png";
-var chickenCoop = "../images/ui/chicken_coop.png";
-var goldEgg = "../images/ui/gold_egg.png";
-var coin = "../images/ui/icon.png";
-var statue = "../images/ui/sunflower_statue.png";
-var potatoStatue = "../images/ui/potato_statue.png";
-var christmasTree = "../images/ui/christmas_tree.png";
-var scarecrow = "../images/ui/scarecrow.png";
-var farmCat = "../images/ui/farm_cat.png";
-var dog = "../images/ui/dog.png";
-var wheatSeed = "../images/wheat/seed.png";
-var wheat = "../images/wheat/plant.png";
-var flour = "../images/wheat/flour.png";
+const deployAddresses_1 = require("./utils/deployAddresses");
+const Token = "../../abis/Token.json";
+const Farm = "../../abis/Farm.json";
+const Axe = "../../abis/Axe.json";
+const Wood = "../../abis/Wood.json";
+const Pickaxe = "../../abis/Pickaxe.json";
+const StonePickaxe = "../../abis/StonePickaxe.json";
+const IronPickaxe = "../../abis/IronPickaxe.json";
+const Stone = "../../abis/Stone.json";
+const Gold = "../../abis/Gold.json";
+const Egg = "../../abis/Egg.json";
+const Chicken = "../../abis/Chicken.json";
+const Iron = "../../abis/Iron.json";
+const Statue = "../../abis/Statue.json";
+const ChristmasTree = "../../abis/ChristmasTree.json";
+const Scarecrow = "../../abis/Scarecrow.json";
+const PotatoStatue = "../../abis/PotatoStatue.json";
+const FarmCat = "../../abis/FarmCat.json";
+const FarmDog = "../../abis/FarmDog.json";
+const Gnome = "../../abis/Gnome.json";
+const pickaxe = "../images/ui/pickaxe.png";
+const woodPickaxe = "../images/ui/wood_pickaxe.png";
+const ironPickaxe = "../images/ui/iron_pickaxe.png";
+const axe = "../images/ui/axe.png";
+const hammer = "../images/ui/hammer.png";
+const rod = "../images/ui/rod.png";
+const sword = "../images/ui/sword.png";
+const wood = "../images/ui/wood.png";
+const iron = "../images/ui/ore.png";
+const goldOre = "../images/ui/gold_ore.png";
+const stone = "../images/ui/rock.png";
+const gnome = "../images/ui/gnome.png";
+const chicken = "../images/ui/chicken.png";
+const egg = "../images/ui/egg.png";
+const chickenCoop = "../images/ui/chicken_coop.png";
+const goldEgg = "../images/ui/gold_egg.png";
+const coin = "../images/ui/icon.png";
+const statue = "../images/ui/sunflower_statue.png";
+const potatoStatue = "../images/ui/potato_statue.png";
+const christmasTree = "../images/ui/christmas_tree.png";
+const scarecrow = "../images/ui/scarecrow.png";
+const farmCat = "../images/ui/farm_cat.png";
+const dog = "../images/ui/dog.png";
+const wheatSeed = "../images/wheat/seed.png";
+const wheat = "../images/wheat/plant.png";
+const flour = "../images/wheat/flour.png";
 exports.recipes = [
     {
         name: "Axe",
@@ -318,7 +309,8 @@ exports.recipes = [
       ],
     },*/
 ];
-exports.items = __spreadArray(__spreadArray([], exports.recipes, true), [
+exports.items = [
+    ...exports.recipes,
     {
         name: "Stone",
         abi: Stone,
@@ -359,7 +351,7 @@ exports.items = __spreadArray(__spreadArray([], exports.recipes, true), [
         type: "ERC20",
         address: deployAddresses_1.deployAddresses["Egg"],
     },
-], false);
+];
 exports.DEFAULT_INVENTORY = {
     Wood: 0,
     Stone: 0,

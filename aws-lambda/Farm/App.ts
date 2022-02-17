@@ -27,9 +27,9 @@ app.use(express.json())
 
 
 app.post('/prod/farm-game/farm', function (req, res) {
-    console.log('--> ' + JSON.stringify(req.body))
+    console.log('--> IN ' + JSON.stringify(req.body))
     const answer = lambda.handler(req.body).then( x => {
-        console.log(x)
+        console.log('<-- OUT ', x)
         res.json(x);
     })
 

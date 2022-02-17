@@ -17,27 +17,15 @@ var Action;
     Action[Action["Plant"] = 0] = "Plant";
     Action[Action["Harvest"] = 1] = "Harvest";
 })(Action = exports.Action || (exports.Action = {}));
-var Farm = /** @class */ (function () {
-    function Farm() {
-    }
-    return Farm;
-}());
+class Farm {
+}
 exports.Farm = Farm;
-var Square = /** @class */ (function () {
-    function Square() {
-    }
-    return Square;
-}());
+class Square {
+}
 exports.Square = Square;
-var Inventory = /** @class */ (function () {
-    function Inventory() {
-    }
-    return Inventory;
-}());
+class Inventory {
+}
 exports.Inventory = Inventory;
-var UserAction = /** @class */ (function () {
-    function UserAction() {
-    }
-    return UserAction;
-}());
+class UserAction {
+}
 exports.UserAction = UserAction;

@@ -7,6 +7,7 @@
   "author": "nfmelendez",
   "license": "MIT",
   "dependencies": {
+    "@metamask/eth-sig-util": "^4.0.0",
     "@types/bignumber.js": "^5.0.0",
     "@types/luxon": "^2.0.9",
     "aws-sdk": "^2.1064.0",
