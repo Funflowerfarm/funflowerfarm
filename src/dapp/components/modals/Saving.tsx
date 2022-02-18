@@ -11,7 +11,7 @@ export const Saving: React.FC = () => (
     <Panel>
         <div id="saving">
             <h4>Saving...</h4>
-            <h6>Miners are working hard to save your farm to the blockchain.</h6>
+            <h6>We are working hard to save your farm..</h6>
 
             <div id='mining-animation'>
                 <img id='mining-gif' src={person} />
@@ -19,9 +19,6 @@ export const Saving: React.FC = () => (
                 <img id='mining-rock' src={rock} />
                 
             </div>
-
-            <span>Increase the gas price for faster transactions</span>
-
         </div>
     </Panel>
 )

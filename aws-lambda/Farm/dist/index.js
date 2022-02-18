@@ -29,6 +29,9 @@ const bignumber_js_1 = require("bignumber.js");
 const farm_1 = require("./farm");
 const luxon_1 = require("luxon");
 const crafting_1 = require("./crafting");
+BigInt.prototype["toJSON"] = function () {
+    return this.toString();
+};
 function provideHandle(repository, staker) {
     return async (event) => {
         event.address = event.address.toLowerCase();
@@ -95,7 +98,7 @@ function provideHandle(repository, staker) {
                 const farm = await repository.getFarm(address);
                 let balance = '0';
                 if (farm) {
-                    balance = farm.inventory.balance;
+                    balance = farm.inventory.balance.toString();
                 }
                 const response = {
                     statusCode: 200,
@@ -393,7 +396,7 @@ async function levelUp(event, repository) {
         }
         const price = getLandPrice(farm.land.length);
         const fmcPrice = await getMarketPrice(price, repository);
-        const balance = new bignumber_js_1.BigNumber(farm.inventory.balance);
+        const balance = new bignumber_js_1.BigNumber(farm.inventory.balance.toString());
         if (balance.lt(fmcPrice)) {
             throw new Error("INSUFFICIENT_FUNDS");
         }
@@ -404,7 +407,7 @@ async function levelUp(event, repository) {
         for (let index = 0; index < 3; index++) {
             farm.land.push(sunFlower);
         }
-        farm.inventory.balance = updatedBalance.toString();
+        farm.inventory.balance = BigInt(updatedBalance.toString());
         const updatedFarm = await repository.saveFarm(address, farm);
         return {
             statusCode: 200,
@@ -421,7 +424,7 @@ async function sync(event, repository) {
     const address = event.address;
     const actions = event.actions;
     const farm = await repository.getFarm(address);
-    let balance = new bignumber_js_1.BigNumber(farm.inventory.balance);
+    let balance = new bignumber_js_1.BigNumber(farm.inventory.balance.toString());
     console.log('Actions to process: ', actions);
     for (let i = 0; i < actions.length; i++) {
         const act = actions[i];
@@ -477,13 +480,11 @@ async function sync(event, repository) {
             balance = balance.plus(fmcPrice);
         }
     }
-    const prevBalance = new bignumber_js_1.BigNumber(farm.inventory.balance);
+    const prevBalance = new bignumber_js_1.BigNumber(farm.inventory.balance.toString());
     const resultofActions = balance.minus(prevBalance);
     repository.updateTotalSupply(resultofActions);
-    farm.inventory.balance = balance.toString();
+    farm.inventory.balance = BigInt(balance.toString());
     farm.syncedAt = nowInSeconds();
-    farm["bignumberTest2"] = BigInt('10000000000000').valueOf();
-    console.log('bgiint', farm["bignumberTest2"]);
     await repository.saveFarm(address, farm);
     return {
         statusCode: 200,
@@ -510,7 +511,7 @@ async function createFarm(event, repository) {
     const newFarm = {
         land: land,
         inventory: {
-            balance: new bignumber_js_1.BigNumber(127).times(new bignumber_js_1.BigNumber(10).pow(18)).toString()
+            balance: BigInt(new bignumber_js_1.BigNumber(127).times(new bignumber_js_1.BigNumber(10).pow(18)).toString())
         }
     };
     newFarm.syncedAt = nowInSeconds();
@@ -656,7 +657,7 @@ async function myReward(event, repository) {
         throw new Error('No reward ready, last open was ' + lastOpenDate);
     }
     const landSize = farm.land.length;
-    const farmBalance = new bignumber_js_1.BigNumber(farm.inventory.balance);
+    const farmBalance = new bignumber_js_1.BigNumber(farm.inventory.balance.toString());
     const farmCount = await repository.getFarmCount();
     const farmShare = farmBalance.dividedBy(new bignumber_js_1.BigNumber(farmCount));
     if (landSize <= 5) {
@@ -672,11 +673,12 @@ async function myReward(event, repository) {
 }
 async function receiveReward(event, repository) {
     const reward = await myReward(event, repository);
-    if (reward.isPositive) {
+    if (reward.isPositive()) {
         const farm = await repository.getFarm(event.address);
-        let balance = new bignumber_js_1.BigNumber(farm.inventory.balance);
+        let balance = new bignumber_js_1.BigNumber(farm.inventory.balance.toString());
+        await repository.updateTotalSupply(reward);
         balance = balance.plus(reward);
-        farm.inventory.balance = balance.toString();
+        farm.inventory.balance = BigInt(balance.toString());
         farm.lastReward = nowInSeconds();
         repository.saveFarm(event.address, farm);
     }

@@ -10,7 +10,7 @@ export const Creating: React.FC = () => (
         <div id="saving">
             Creating...
 
-            <h6>Miners are working hard to create your farm on the blockchain.</h6>
+            <h6>Servers are working hard to create your farm</h6>
 
             <div id='mining-animation'>
                 <img id='mining-gif' src={person} />
@@ -19,7 +19,6 @@ export const Creating: React.FC = () => (
                 
             </div>
 
-            <span>Increase the gas price for faster transactions</span>
         </div>
     </Panel>
 )

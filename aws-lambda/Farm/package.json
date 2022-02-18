@@ -7,10 +7,11 @@
   "author": "nfmelendez",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.51.0",
+    "@aws-sdk/lib-dynamodb": "^3.51.0",
     "@metamask/eth-sig-util": "^4.0.0",
     "@types/bignumber.js": "^5.0.0",
     "@types/luxon": "^2.0.9",
-    "aws-sdk": "^2.1064.0",
     "bignumber.js": "^9.0.2",
     "ethereumjs-util": "^7.1.4",
     "express": "^4.17.2",

@@ -32,7 +32,7 @@ export class Square {
 
 
 export class Inventory {
-    balance: string;
+    balance: bigint;
 }
 
 

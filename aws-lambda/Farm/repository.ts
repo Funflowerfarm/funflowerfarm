@@ -4,21 +4,31 @@ import BigNumber from 'bignumber.js';
 import {Farm} from './farm'
 import {User} from './User'
 const { DateTime } = require("luxon");
-import { TransactWriteItemList, TransactWriteItem } from 'aws-sdk/clients/dynamodb';
 
+import { nowInSeconds } from './index';
+import { DynamoDBClient, ExecuteStatementInput } from "@aws-sdk/client-dynamodb"; 
+import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb"; 
 
+const client = new DynamoDBClient({region: 'us-west-1'});
 
-const access = 'AKIASXZ3APWM7CLXODHH'
-const key = 'RVVA7KAqUV4bQe5d44Rkjkfrj5veslK+yWcKJqpN'
+const marshallOptions = {
+  // Whether to automatically convert empty strings, blobs, and sets to `null`.
+  convertEmptyValues: false, // false, by default.
+  // Whether to remove undefined values while marshalling.
+  removeUndefinedValues: true, // false, by default.
+  // Whether to convert typeof object to map attribute.
+  convertClassInstanceToMap: true, // false, by default.
+};
 
-//const AWS = require("aws-sdk");
-import AWS from 'aws-sdk';
-import { nowInSeconds } from '.';
+const unmarshallOptions = {
+  // Whether to return numbers as a string instead of converting them to native JavaScript numbers.
+  wrapNumbers: false, // false, by default.
+};
 
-AWS.config.update({region:'us-west-1'
-});
+const translateConfig = { marshallOptions, unmarshallOptions };
 
-const dynamo = new AWS.DynamoDB.DocumentClient();
+const dynamo = DynamoDBDocument.from(client, translateConfig);
+
 
 const farmGameTable = 'farm-game';
 
@@ -112,7 +122,6 @@ export class Repository {
           user: user
         }
       })
-      .promise();
     }
 
     async createUser(address: string): Promise<User> {
@@ -137,7 +146,6 @@ export class Repository {
           s: address.toLowerCase()
         }
       })
-      .promise();
     
       if (result.Item) {
         return result.Item.user as User
@@ -155,7 +163,6 @@ export class Repository {
           s: farmCounter
         }
       })
-      .promise();
     
       if (result.Item) {
         return result.Item.counter
@@ -176,7 +183,6 @@ export class Repository {
           counter: counter
         }
       })
-      .promise(); 
 
       return counter
     }
@@ -191,29 +197,25 @@ export class Repository {
           s: supplySecondary + '/' + name
         }
       })
-      .promise();
     
       if (result.Item) {
-        return result.Item.supply
+        return result.Item.supply.toString()
       } else {
         return '0'
       }
     }
 
   async  updateTotalSupply(resultofActions: BigNumber) {
-    let supply = await this.totalSupply()
-    supply = supply.plus(resultofActions)
-    
-    await dynamo
-    .put({
-      TableName: farmGameTable,
-      Item: {
-        p: totalSupplyPrimaryKey,
-        s: supplySecondary,
-        supply: supply.toString()
-      }
-    })
-    .promise(); 
+    const ra:string = BigInt(resultofActions.integerValue().toString()).toString()
+
+    const sql = `UPDATE "farm-game" SET supply= supply + ${ra} WHERE p='${totalSupplyPrimaryKey}' AND s='${supplySecondary}'`
+
+    const stmt:ExecuteStatementInput = {
+      Statement : sql,
+      ConsistentRead: true
+    }
+    console.log("Execute: " + sql)
+    await dynamo.executeStatement(stmt)
   }
 
  async getFarm(address): Promise<Farm | undefined> {
@@ -225,7 +227,6 @@ export class Repository {
         s: address
       }
     })
-    .promise() 
 
     if (result.Item) {
       return result.Item.farm as Farm
@@ -255,7 +256,6 @@ export class Repository {
         farm: farm
       }
     })
-    .promise(); 
     return farm;
 }
 
@@ -268,7 +268,6 @@ async totalSupply(): Promise<BigNumber> {
       s: supplySecondary
     }
   })
-  .promise();
 
   if (result.Item) {
     return new BigNumber(result.Item.supply)

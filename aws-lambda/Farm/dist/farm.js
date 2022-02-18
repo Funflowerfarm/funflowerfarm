@@ -18,14 +18,26 @@ var Action;
     Action[Action["Harvest"] = 1] = "Harvest";
 })(Action = exports.Action || (exports.Action = {}));
 class Farm {
+    land;
+    inventory;
+    syncedAt;
+    recoveryTime;
+    lastReward;
 }
 exports.Farm = Farm;
 class Square {
+    createdAt;
+    fruit;
 }
 exports.Square = Square;
 class Inventory {
+    balance;
 }
 exports.Inventory = Inventory;
 class UserAction {
+    action;
+    fruit;
+    landIndex;
+    createdAt;
 }
 exports.UserAction = UserAction;

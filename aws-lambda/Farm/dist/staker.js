@@ -12,12 +12,13 @@ function randomInt(min, max) {
 }
 ;
 class Wood {
+    repo;
+    // How long it takes
+    RECOVERY_SECONDS = new bignumber_js_1.default(3600);
+    // How much wood a tree has
+    STRENGTH = new bignumber_js_1.default(10).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
+    requires = 'Axe';
     constructor(r) {
-        // How long it takes
-        this.RECOVERY_SECONDS = new bignumber_js_1.default(3600);
-        // How much wood a tree has
-        this.STRENGTH = new bignumber_js_1.default(10).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
-        this.requires = 'Axe';
         this.repo = r;
     }
     getAvailable(farm) {
@@ -101,14 +102,11 @@ class Wood {
     }
 }
 class Stone extends Wood {
-    constructor() {
-        super(...arguments);
-        // 2 hrs
-        this.RECOVERY_SECONDS = new bignumber_js_1.default(7200);
-        // How much stone a quarry has
-        this.STRENGTH = new bignumber_js_1.default(10).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
-        this.requires = 'Wood pickaxe';
-    }
+    // 2 hrs
+    RECOVERY_SECONDS = new bignumber_js_1.default(7200);
+    // How much stone a quarry has
+    STRENGTH = new bignumber_js_1.default(10).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
+    requires = 'Wood pickaxe';
     transformInputToOutputResource(amount) {
         const multiplier = new bignumber_js_1.default(randomInt(2, 4));
         const total = amount.multipliedBy(multiplier);
@@ -116,14 +114,11 @@ class Stone extends Wood {
     }
 }
 class Iron extends Wood {
-    constructor() {
-        super(...arguments);
-        // 2 hrs
-        this.RECOVERY_SECONDS = new bignumber_js_1.default(14400);
-        // How much stone a quarry has
-        this.STRENGTH = new bignumber_js_1.default(3).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
-        this.requires = 'Stone Pickaxe';
-    }
+    // 2 hrs
+    RECOVERY_SECONDS = new bignumber_js_1.default(14400);
+    // How much stone a quarry has
+    STRENGTH = new bignumber_js_1.default(3).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
+    requires = 'Stone Pickaxe';
     transformInputToOutputResource(amount) {
         const multiplier = new bignumber_js_1.default(randomInt(3, 5));
         const total = amount.multipliedBy(multiplier);
@@ -131,13 +126,10 @@ class Iron extends Wood {
     }
 }
 class Gold extends Wood {
-    constructor() {
-        super(...arguments);
-        // 12 hrs
-        this.RECOVERY_SECONDS = new bignumber_js_1.default(43200);
-        this.STRENGTH = new bignumber_js_1.default(2).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
-        this.requires = 'Iron Pickaxe';
-    }
+    // 12 hrs
+    RECOVERY_SECONDS = new bignumber_js_1.default(43200);
+    STRENGTH = new bignumber_js_1.default(2).multipliedBy(new bignumber_js_1.default(10).pow(18)); //10 * (10**18);
+    requires = 'Iron Pickaxe';
     transformInputToOutputResource(amount) {
         const multiplier = new bignumber_js_1.default(randomInt(1, 2));
         const total = amount.multipliedBy(multiplier);
@@ -145,6 +137,8 @@ class Gold extends Wood {
     }
 }
 class Staker {
+    repo;
+    stakeMap;
     constructor(r) {
         this.repo = r;
         this.stakeMap = new Map();

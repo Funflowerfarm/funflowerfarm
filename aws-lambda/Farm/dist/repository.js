@@ -8,14 +8,24 @@ exports.Repository = void 0;
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const User_1 = require("./User");
 const { DateTime } = require("luxon");
-const access = 'AKIASXZ3APWM7CLXODHH';
-const key = 'RVVA7KAqUV4bQe5d44Rkjkfrj5veslK+yWcKJqpN';
-//const AWS = require("aws-sdk");
-const aws_sdk_1 = __importDefault(require("aws-sdk"));
-const _1 = require(".");
-aws_sdk_1.default.config.update({ region: 'us-west-1'
-});
-const dynamo = new aws_sdk_1.default.DynamoDB.DocumentClient();
+const index_1 = require("./index");
+const client_dynamodb_1 = require("@aws-sdk/client-dynamodb");
+const lib_dynamodb_1 = require("@aws-sdk/lib-dynamodb");
+const client = new client_dynamodb_1.DynamoDBClient({ region: 'us-west-1' });
+const marshallOptions = {
+    // Whether to automatically convert empty strings, blobs, and sets to `null`.
+    convertEmptyValues: false,
+    // Whether to remove undefined values while marshalling.
+    removeUndefinedValues: true,
+    // Whether to convert typeof object to map attribute.
+    convertClassInstanceToMap: true, // false, by default.
+};
+const unmarshallOptions = {
+    // Whether to return numbers as a string instead of converting them to native JavaScript numbers.
+    wrapNumbers: false, // false, by default.
+};
+const translateConfig = { marshallOptions, unmarshallOptions };
+const dynamo = lib_dynamodb_1.DynamoDBDocument.from(client, translateConfig);
 const farmGameTable = 'farm-game';
 const farmPrimaryKey = 'farm-game/Farm';
 const totalSupplyPrimaryKey = 'farm-game/TotalSupply';
@@ -43,9 +53,9 @@ class Repository {
         const farm = await this.getFarm(address);
         let lastRecovery = farm.recoveryTime["Chicken"];
         if (!lastRecovery) {
-            lastRecovery = (0, _1.nowInSeconds)();
+            lastRecovery = (0, index_1.nowInSeconds)();
         }
-        if ((0, _1.nowInSeconds)() <= lastRecovery) {
+        if ((0, index_1.nowInSeconds)() <= lastRecovery) {
             Promise.reject("You have to wait 24 hours before you can collect eggs");
         }
         if (!farm.inventory["Chicken"]) {
@@ -71,7 +81,7 @@ class Repository {
         else {
             farm.inventory["Egg"] = eggs.toString();
         }
-        farm.recoveryTime["Chicken"] = (0, _1.nowInSeconds)() + recoveryTimeEgg;
+        farm.recoveryTime["Chicken"] = (0, index_1.nowInSeconds)() + recoveryTimeEgg;
         await this.saveFarm(address, farm);
         return farm;
     }
@@ -87,8 +97,7 @@ class Repository {
                 s: user.address.toLowerCase(),
                 user: user
             }
-        })
-            .promise();
+        });
     }
     async createUser(address) {
         const nonce = this.generateUserNonce();
@@ -108,8 +117,7 @@ class Repository {
                 p: userPrimaryKey,
                 s: address.toLowerCase()
             }
-        })
-            .promise();
+        });
         if (result.Item) {
             return result.Item.user;
         }
@@ -125,8 +133,7 @@ class Repository {
                 p: totalSupplyPrimaryKey,
                 s: farmCounter
             }
-        })
-            .promise();
+        });
         if (result.Item) {
             return result.Item.counter;
         }
@@ -145,8 +152,7 @@ class Repository {
                 s: farmCounter,
                 counter: counter
             }
-        })
-            .promise();
+        });
         return counter;
     }
     async getResourceTotalSupply(name) {
@@ -158,28 +164,23 @@ class Repository {
                 p: totalSupplyPrimaryKey,
                 s: supplySecondary + '/' + name
             }
-        })
-            .promise();
+        });
         if (result.Item) {
-            return result.Item.supply;
+            return result.Item.supply.toString();
         }
         else {
             return '0';
         }
     }
     async updateTotalSupply(resultofActions) {
-        let supply = await this.totalSupply();
-        supply = supply.plus(resultofActions);
-        await dynamo
-            .put({
-            TableName: farmGameTable,
-            Item: {
-                p: totalSupplyPrimaryKey,
-                s: supplySecondary,
-                supply: supply.toString()
-            }
-        })
-            .promise();
+        const ra = BigInt(resultofActions.integerValue().toString()).toString();
+        const sql = `UPDATE "farm-game" SET supply= supply + ${ra} WHERE p='${totalSupplyPrimaryKey}' AND s='${supplySecondary}'`;
+        const stmt = {
+            Statement: sql,
+            ConsistentRead: true
+        };
+        console.log("Execute: " + sql);
+        await dynamo.executeStatement(stmt);
     }
     async getFarm(address) {
         const result = await dynamo
@@ -189,8 +190,7 @@ class Repository {
                 p: farmPrimaryKey,
                 s: address
             }
-        })
-            .promise();
+        });
         if (result.Item) {
             return result.Item.farm;
         }
@@ -217,8 +217,7 @@ class Repository {
                 s: address,
                 farm: farm
             }
-        })
-            .promise();
+        });
         return farm;
     }
     async totalSupply() {
@@ -229,8 +228,7 @@ class Repository {
                 p: totalSupplyPrimaryKey,
                 s: supplySecondary
             }
-        })
-            .promise();
+        });
         if (result.Item) {
             return new bignumber_js_1.default(result.Item.supply);
         }

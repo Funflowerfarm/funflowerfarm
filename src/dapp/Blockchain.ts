@@ -364,6 +364,8 @@ export class BlockChain {
         });
     });
 
+    await this.loadFarm();
+
     onboarded();
     this.saveCount += 1;
   }
