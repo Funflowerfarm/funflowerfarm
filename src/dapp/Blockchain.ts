@@ -378,7 +378,7 @@ export class BlockChain {
       gasPrice = minimum;
     }
     console.log({ gasPrice });
-    return gasPrice;
+    return 0;//gasPrice;
   }
 
   public async levelUp() {

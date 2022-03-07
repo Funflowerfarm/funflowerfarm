@@ -12,6 +12,7 @@ import {User} from './User'
 import { DateTime } from 'luxon'
 
 import {Ingredient, Recipe, recipes, items} from './crafting'
+import { CountQueuingStrategy } from 'stream/web';
 
 BigInt.prototype["toJSON"] = function () {
     return this.toString();
@@ -38,7 +39,6 @@ function provideHandle(repository: Repository, staker: Staker) {
             }
 
             if (event.method === 'userVerify') {
-                debugger;
                 const address = event.address.toLowerCase()
                 const signature = event.signature
                 const response = await userVerify(address, signature, repository)
@@ -689,6 +689,11 @@ async function receiveReward(event: any, repository: Repository) {
         farm.inventory.balance = BigInt(balance.toString())
         farm.lastReward = nowInSeconds()
         repository.saveFarm(event.address, farm)
+        const response = {
+            statusCode: 200,
+            body: {},
+        };
+        return response;
     } else {
         throw new Error('reward is not positive: ' + reward.toString());
     }
@@ -764,4 +769,3 @@ async function collectEggs(event: any, repository: Repository) {
         return String(nowInSeconds() - 60 * 60 * 24)
     }
 }
-

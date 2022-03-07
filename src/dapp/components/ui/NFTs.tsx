@@ -169,9 +169,9 @@ export const NFTs: React.FC<Props> = ({
 
       </div>
       <div id="recipe">
-        {selectedRecipe.supply && !isNaN(amountLeft) && (
-         {/* <span className="nft-count">{`${amountLeft} left!`}</span>*/ }
-        )}
+        {/*selectedRecipe.supply && !isNaN(amountLeft) && (
+          <span className="nft-count">{`${amountLeft} left!`}</span>
+        )*/}
         <span id="recipe-title">{selectedRecipe.name}</span>
         <div id="crafting-item">
           <img src={selectedRecipe.image} />

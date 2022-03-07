@@ -345,9 +345,9 @@ export const blockChainMachine = createMachine<
               }
 
               // First time saving, show the warning
-              if (!hasOnboarded()) {
+              /*if (!hasOnboarded()) {
                 return true;
-              }
+              }*/
 
               // Woh! Gas prices are large, give the player a hint
               return event.data.estimate > 40000000000;

@@ -56,7 +56,7 @@ class Wood {
     }
 
 
-    async stake(address:string, amount:BigNumber): Promise<void> {
+    async stake(address:string, amount:BigNumber): Promise<any> {
         /*        require(msg.sender == minter, "You are not the minter");
         
         uint available = getAvailable(account);
@@ -109,6 +109,11 @@ class Wood {
         const updatedrequire = new BigNumber(farm.inventory[this.requires]).minus(amount)
         farm.inventory[this.requires] = updatedrequire.toString()
         await this.repo.saveFarm(address, farm)
+        const response = {
+            statusCode: 200,
+            body: {},
+        };
+        return response;
     }
 
     transformInputToOutputResource(amount: BigNumber) : BigNumber {
@@ -193,7 +198,7 @@ export class Staker {
         const item = items.find( x => x.address == resourceAddress)
         const stackeable = this.stakeMap.get(item.name)
         if (stackeable) {
-            await stackeable.stake(address, new BigNumber(amount))
+            return await stackeable.stake(address, new BigNumber(amount))
         } else {
             throw new Error("Not Known resource " + resourceAddress)
         }

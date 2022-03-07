@@ -265,14 +265,17 @@ export const Farm: React.FC = () => {
               />
             )}
           </Button>
-          <Button
+          
+          {accountId.current && (<Button
             onClick={() =>
-              window.open("https://docs.sunflower-farmers.com/")
+              alert(accountId.current)
             }
           >
-            About
-            <img src={questionMark} id="question" />
-          </Button>
+            {accountId.current.substring(0, 3) + '..' + accountId.current.substring(accountId.current.length - 4, accountId.current.length)}
+            {/*<img src={questionMark} id="question" />*/}
+          </Button>)
+          }
+          
         </Panel>
       </span>
 
@@ -285,11 +288,11 @@ export const Farm: React.FC = () => {
           </div>
         </Panel>
       </div>
-
+{/*
       <div id="buy-now" onClick={onBuyMore}>
         <Message>Quickswap</Message>
       </div>
-
+*/}
       <FruitBoard
         fruits={fruits}
         selectedItem={selectedItem}

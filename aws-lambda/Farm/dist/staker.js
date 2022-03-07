@@ -94,6 +94,11 @@ class Wood {
         const updatedrequire = new bignumber_js_1.default(farm.inventory[this.requires]).minus(amount);
         farm.inventory[this.requires] = updatedrequire.toString();
         await this.repo.saveFarm(address, farm);
+        const response = {
+            statusCode: 200,
+            body: {},
+        };
+        return response;
     }
     transformInputToOutputResource(amount) {
         const multiplier = new bignumber_js_1.default(randomInt(3, 5));
@@ -152,7 +157,7 @@ class Staker {
         const item = crafting_1.items.find(x => x.address == resourceAddress);
         const stackeable = this.stakeMap.get(item.name);
         if (stackeable) {
-            await stackeable.stake(address, new bignumber_js_1.default(amount));
+            return await stackeable.stake(address, new bignumber_js_1.default(amount));
         }
         else {
             throw new Error("Not Known resource " + resourceAddress);

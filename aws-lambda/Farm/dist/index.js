@@ -50,7 +50,6 @@ function provideHandle(repository, staker) {
                 return response;
             }
             if (event.method === 'userVerify') {
-                debugger;
                 const address = event.address.toLowerCase();
                 const signature = event.signature;
                 const response = await userVerify(address, signature, repository);
@@ -681,6 +680,11 @@ async function receiveReward(event, repository) {
         farm.inventory.balance = BigInt(balance.toString());
         farm.lastReward = nowInSeconds();
         repository.saveFarm(event.address, farm);
+        const response = {
+            statusCode: 200,
+            body: {},
+        };
+        return response;
     }
     else {
         throw new Error('reward is not positive: ' + reward.toString());

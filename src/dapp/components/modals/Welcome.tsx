@@ -55,7 +55,9 @@ export const Welcome: React.FC<Props> = ({ onGetStarted }) => {
   return (
     <Panel>
       <div id="welcome">
-        <img id="logo" src={logo} />
+        {/*<img id="logo" src={logo} />*/}
+        <div style={{fontSize: '43px'}}>Funflower Farm</div>
+        <br/>
         <Button onClick={onGetStarted}>
           <span>Get Started</span>
         </Button>
