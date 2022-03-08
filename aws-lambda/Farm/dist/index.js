@@ -428,7 +428,7 @@ async function sync(event, repository) {
     for (let i = 0; i < actions.length; i++) {
         const act = actions[i];
         const thirtyMinutesAgoSeconds = Math.floor(luxon_1.DateTime.now().minus({ minutes: 30 }).toSeconds());
-        if (act.createdAt < thirtyMinutesAgoSeconds) {
+        if (act.createdAt < thirtyMinutesAgoSeconds && !process.env['FFF_TEST']) {
             throw new Error("EVENT_EXPIRED");
         }
         if (act.createdAt < farm.syncedAt) {
@@ -453,9 +453,12 @@ async function sync(event, repository) {
                 throw new Error(`Not balance ${balance} to but seed at price ${fmcPrice.toString()}`);
             }
             balance = balance.minus(fmcPrice);
-            const plantedSeed = new farm_1.Square();
+            const plantedSeed = farm.land[act.landIndex];
             plantedSeed.fruit = act.fruit;
-            plantedSeed.createdAt = nowInSeconds();
+            if (plantedSeed.createdAt > act.createdAt) {
+                throw new Error(`Not balance ${balance} to but seed at price ${fmcPrice.toString()}`);
+            }
+            plantedSeed.createdAt = act.createdAt;
             farm.land[act.landIndex] = plantedSeed;
         }
         else if (act.action == farm_1.Action.Harvest) {
@@ -466,12 +469,12 @@ async function sync(event, repository) {
             const duration = act.createdAt - square.createdAt;
             const secondsToHarvest = getHarvestSeconds(square.fruit);
             if (!(duration >= secondsToHarvest)) {
-                throw new Error(`NOT_RIPE duration ${duration} second to harvest ${secondsToHarvest}`);
+                throw new Error(`NOT_RIPE duration ${duration} second to harvest ${secondsToHarvest} act order ${i} and landIndex ${act.landIndex}`);
             }
             // Clear the land
             const empty = new farm_1.Square();
             empty.fruit = farm_1.Fruit.None;
-            empty.createdAt = 0;
+            empty.createdAt = act.createdAt;
             farm.land[act.landIndex] = empty;
             const price = getFruitPrice(square.fruit);
             const fmcPrice = await getMarketPrice(price, repository);
@@ -510,7 +513,7 @@ async function createFarm(event, repository) {
     const newFarm = {
         land: land,
         inventory: {
-            balance: BigInt(new bignumber_js_1.BigNumber(127).times(new bignumber_js_1.BigNumber(10).pow(18)).toString())
+            balance: BigInt(new bignumber_js_1.BigNumber(0).times(new bignumber_js_1.BigNumber(10).pow(18)).toString())
         }
     };
     newFarm.syncedAt = nowInSeconds();

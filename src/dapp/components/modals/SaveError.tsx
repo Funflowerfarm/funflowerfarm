@@ -58,7 +58,7 @@ const Content: React.FC<Props> = ({ code }) => {
         our{" "}
         <a
           id="error-link"
-          href="https://discord.gg/DZWHuhVUGN"
+          href="https://discord.gg/krhRWgrW"
           target="_blank"
         >
           faq
