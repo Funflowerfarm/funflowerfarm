@@ -58,7 +58,14 @@ export const Welcome: React.FC<Props> = ({ onGetStarted }) => {
         {/*<img id="logo" src={logo} />*/}
         <div style={{fontSize: '43px'}}>Funflower Farm</div>
         <br/>
-        <Button onClick={onGetStarted}>
+        <Button onClick={() => {
+          onGetStarted();
+          window.globalThis.gtag('event', 'GettingStarted', {
+            'event_category': 'firstUserExpirience',
+            'event_label': 'getting started',
+            'value': 1
+          });
+          }}>
           <span>Get Started</span>
         </Button>
         {/*}

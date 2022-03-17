@@ -167,7 +167,7 @@ export class BlockChain {
       this.oldInventory = null;
       const chainId = await this.web3.eth.getChainId();
       //debugger;
-      if (chainId === 4) {
+      if (chainId === 1) {
         try {
         await this.connectToMatic();
         } catch(e) {
