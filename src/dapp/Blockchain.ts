@@ -305,6 +305,12 @@ export class BlockChain {
         })
         .on("receipt", async function (receipt) {
           console.log({ receipt });
+          console.log("Sending create famr google event")
+          window.globalThis.gtag('event', 'CreateFarm', {
+            'event_category': 'firstUserExpirience',
+            'event_label': 'create a farm',
+            'value': 1
+          });
           resolve(receipt);
         });
     });
