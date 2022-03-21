@@ -6,4 +6,4 @@ category: Jekyll
 layout: post
 ---
 
-This is an about page.
+Fun flower farm is developed by Nicolas Melendez (Twitter: @nfmelendez)
