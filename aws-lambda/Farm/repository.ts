@@ -43,6 +43,10 @@ const userPrimaryKey = 'farm-game/User';
 
 
 export class Repository {
+    async createGuestUser(address: string) : Promise<User> {
+      const user = await this.createUser(address)
+      return user;
+    }
 
     async collectEggs(address: string) : Promise<Farm> {
       /*  uint chickens = super.balanceOf(msg.sender);

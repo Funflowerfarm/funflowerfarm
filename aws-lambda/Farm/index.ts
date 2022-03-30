@@ -12,7 +12,6 @@ import {User} from './User'
 import { DateTime } from 'luxon'
 
 import {Ingredient, Recipe, recipes, items} from './crafting'
-import { CountQueuingStrategy } from 'stream/web';
 
 BigInt.prototype["toJSON"] = function () {
     return this.toString();
@@ -24,6 +23,22 @@ function provideHandle(repository: Repository, staker: Staker) {
         event.address = event.address.toLowerCase()
         try {
             console.log(`event m ${event.method} s ${event.authToken}`)
+            if (event.method === 'loginGuest') {
+                const address = uuidv4().toLowerCase()
+                const user = await repository.createGuestUser(address)
+                user.session = uuidv4().toLowerCase()
+                await repository.saveUser(user)
+     
+                const response = {
+                    statusCode: 200,
+                    body: {
+                        address: user.address,
+                        authToken: user.session
+                      },
+                };
+                return response;
+            }
+            
             if (event.method === 'userNonce') {
                 const address = event.address.toLowerCase();
                 let user:User = await repository.getUser(address)

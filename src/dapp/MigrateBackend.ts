@@ -320,6 +320,28 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
    }
 
 
+   async function LoginGuestToCentralizeBackend(): Promise<any> {
+    const userData =  await axios.post('/prod/farm-game/farm', {
+      address: 'GUEST',
+      method: 'loginGuest'
+     })
+     .then(function (response) {
+       return new Promise(function(resolve, reject) {
+         const address = response.data.body.address
+         const authToken = response.data.body.authToken
+         localStorage.setItem(SESSION_TOKEN, authToken)
+         localStorage.setItem(SESSION_ADDRESS, address)
+
+         resolve({
+           address: address,
+           authToken: authToken
+         });
+       });
+     })
+     return userData
+   }
+
+
    function AddCommon(obj) {
 
      const st = localStorage.getItem(SESSION_TOKEN)
@@ -341,6 +363,7 @@ const SESSION_ADDRESS = "SESSION_ADDRESS"
     MigrateBackendItem,
     LoginToCentralizeBackend,
     LoginToCentralizeBackendSignature,
+    LoginGuestToCentralizeBackend,
     SESSION_TOKEN,
     SESSION_ADDRESS
   }

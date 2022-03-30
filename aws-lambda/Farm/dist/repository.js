@@ -33,6 +33,10 @@ const supplySecondary = 'Supply';
 const farmCounter = 'FarmCounter';
 const userPrimaryKey = 'farm-game/User';
 class Repository {
+    async createGuestUser(address) {
+        const user = await this.createUser(address);
+        return user;
+    }
     async collectEggs(address) {
         /*  uint chickens = super.balanceOf(msg.sender);
       require(chickens > 0, "You have no chickens");

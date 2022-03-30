@@ -6,7 +6,7 @@ import CommunityCrafting from "../abis/CommunityCrafting.json";
 import Chicken from "../abis/Chicken.json";
 import QuickSwap from "../abis/QuickSwapRouter.json";
 import {deployAddresses} from "../dapp/utils/deployAddresses"
-import {MigrateBackendToken, MigrateBackendFarm, MigrateBackendItem, LoginToCentralizeBackend, LoginToCentralizeBackendSignature, SESSION_TOKEN, SESSION_ADDRESS} from "./MigrateBackend"
+import {MigrateBackendToken, MigrateBackendFarm, MigrateBackendItem, LoginToCentralizeBackend, LoginToCentralizeBackendSignature, SESSION_TOKEN, SESSION_ADDRESS, LoginGuestToCentralizeBackend} from "./MigrateBackend"
 
 import {
   Transaction,
@@ -90,8 +90,8 @@ export class BlockChain {
         CommunityCrafting as any,
         COMMUNITY_CRAFTING_ADDRESS
       );
-      const maticAccounts = await this.web3.eth.getAccounts();
-      this.account = maticAccounts[0];
+      //const maticAccounts = await this.web3.eth.getAccounts();
+      this.account = 'GUEST';//maticAccounts[0];
 
       this.contracts = items
         .filter((item) => !!item.abi)
@@ -141,6 +141,8 @@ export class BlockChain {
   }
 
   private async setupWeb3() {
+    this.web3 = new Web3()
+    /*
     if ((window as any).ethereum) {
       try {
         // Request account access if needed
@@ -154,7 +156,7 @@ export class BlockChain {
       this.web3 = new Web3((window as any).web3.currentProvider);
     } else {
       throw new Error("NO_WEB3");
-    }
+    }*/
   }
 
   public async initialise(retryCount = 0) {
@@ -165,7 +167,7 @@ export class BlockChain {
       await new Promise((res) => window.setTimeout(res, 1000));
       await this.setupWeb3();
       this.oldInventory = null;
-      const chainId = await this.web3.eth.getChainId();
+      const chainId = 1 //await this.web3.eth.getChainId();
       //debugger;
       if (chainId === 1) {
         try {
@@ -207,19 +209,30 @@ export class BlockChain {
     }
   }
   async login() {
-    if (localStorage.getItem(SESSION_ADDRESS) 
-    && localStorage.getItem(SESSION_TOKEN) 
-    && localStorage.getItem(SESSION_ADDRESS) === this.account) {
-      console.log(`account ${this.account} already logged`)
-     return
-    } 
 
-    const nonce  =  await LoginToCentralizeBackend(this.account)
-    console.log(`account ${this.account} login nonce ${nonce} ` + typeof  nonce)
-    const signedMessage = await this.web3.eth.personal.sign(nonce, this.account, '')
-    console.log(`account ${this.account} signed message ` + signedMessage)
-    const session = await LoginToCentralizeBackendSignature(this.account, signedMessage)
-    console.log(`account ${this.account} session ` + session)
+    if (this.account === 'GUEST') {
+      if (localStorage.getItem(SESSION_ADDRESS) && localStorage.getItem(SESSION_TOKEN)) {
+        this.account = localStorage.getItem(SESSION_ADDRESS)
+        console.log(`account GUEST ${this.account} already logged`)
+        return
+      } 
+      const userData = await LoginGuestToCentralizeBackend()
+      this.account = userData.address
+      console.log(`account GUEST  ${this.account} auth ${userData.authToken} `)
+    } else {
+      if (localStorage.getItem(SESSION_ADDRESS) 
+      && localStorage.getItem(SESSION_TOKEN) 
+      && localStorage.getItem(SESSION_ADDRESS) === this.account) {
+        console.log(`account ${this.account} already logged`)
+       return
+      } 
+      const nonce  =  await LoginToCentralizeBackend(this.account)
+      console.log(`account ${this.account} login nonce ${nonce} ` + typeof  nonce)
+      const signedMessage = await this.web3.eth.personal.sign(nonce, this.account, '')
+      console.log(`account ${this.account} signed message ` + signedMessage)
+      const session = await LoginToCentralizeBackendSignature(this.account, signedMessage)
+      console.log(`account ${this.account} session ` + session)
+    }
   }
 
   public async loadFarm() {
@@ -377,6 +390,7 @@ export class BlockChain {
   }
 
   public async estimate(incr = 1) {
+    /*
     const e = await this.web3.eth.getGasPrice();
     let gasPrice = e ? Number(e) * incr : undefined;
     const minimum = MINIMUM_GAS_PRICE * 1000000000;
@@ -384,6 +398,7 @@ export class BlockChain {
       gasPrice = minimum;
     }
     console.log({ gasPrice });
+    */
     return 0;//gasPrice;
   }
 
@@ -706,16 +721,16 @@ export class BlockChain {
   }
 
   public async getCharityBalances() {
-    const coolEarth = this.web3.eth.getBalance(Charity.CoolEarth);
+    /*const coolEarth = this.web3.eth.getBalance(Charity.CoolEarth);
     const waterProject = this.web3.eth.getBalance(Charity.TheWaterProject);
     const heifer = this.web3.eth.getBalance(Charity.Heifer);
     const [coolEarthBalance, waterBalance, heiferBalance] =
       await Promise.all([coolEarth, waterProject, heifer]);
-
+*/
     return {
-      coolEarthBalance: this.web3.utils.fromWei(coolEarthBalance, "ether"),
-      waterBalance: this.web3.utils.fromWei(waterBalance, "ether"),
-      heiferBalance: this.web3.utils.fromWei(heiferBalance, "ether"),
+      coolEarthBalance: this.web3.utils.fromWei('0', "ether"),
+      waterBalance: this.web3.utils.fromWei('0', "ether"),
+      heiferBalance: this.web3.utils.fromWei('0', "ether"),
     };
   }
 
