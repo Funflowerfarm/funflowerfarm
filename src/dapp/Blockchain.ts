@@ -300,7 +300,7 @@ export class BlockChain {
 
     await new Promise(async (resolve, reject) => {
       const gasPrice = await this.estimate();
-
+      const account = this.account
       this.farm.methods
         .createFarm(donation.charity)
         .send({
@@ -321,7 +321,7 @@ export class BlockChain {
           console.log("Sending create famr google event")
           window.globalThis.gtag('event', 'CreateFarm', {
             'event_category': 'firstUserExpirience',
-            'event_label': 'create a farm',
+            'event_label': '' + account,
             'value': 1
           });
           resolve(receipt);

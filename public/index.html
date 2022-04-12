@@ -39,6 +39,32 @@
       gtag("js", new Date());
 
       gtag("config", "G-X7GQ2C5VF6");
+
+      	// get parameters from the query string.
+      function getParameterByName(name) {
+          name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+          var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+              results = regex.exec(location.search);
+          return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+      }
+      try {
+        const trackClick = getParameterByName('trackClick');
+
+        if (trackClick && trackClick !== '') {
+          const libId = getParameterByName('libId');
+          if (libId && libId !== '') {
+            gtag('event', 'linkFromRefer', {
+            'event_category': trackClick,
+            'event_label': libId,
+            'value': 1
+          });
+          }
+          
+        }
+
+      } catch(error) {
+        console.log(error);
+      }
     </script>
   </head>
   <body>
