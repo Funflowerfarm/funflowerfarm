@@ -229,6 +229,11 @@ export const Farm: React.FC = () => {
 
   const save = async () => {
     send("SAVE", { action: "SYNC" });
+    window.globalThis.gtag('event', 'SaveFarm', {
+      'event_category': 'SaveFarm',
+      'event_label': 'SaveFarm',
+      'value': 1
+    });
   };
 
   const safeBalance = balance.toNumber();

@@ -53,7 +53,7 @@
         if (trackClick && trackClick !== '') {
           const libId = getParameterByName('libId');
           if (libId && libId !== '') {
-            gtag('event', 'linkFromRefer', {
+            gtag('event', 'linkFromRefer-' + trackClick + '-' + libId, {
             'event_category': trackClick,
             'event_label': libId,
             'value': 1
