@@ -6,4 +6,4 @@ category: Jekyll
 layout: post
 ---
 
-[Contact us in discord!](https://discord.gg/haSVHh64qR)
+[Contact us in discord!](https://discord.gg/5Ha6r9DQNg)

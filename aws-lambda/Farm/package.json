@@ -20,7 +20,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "postbuild": "cp package.json dist/package.json && cd dist && npm install ",
+    "postbuild": "cp package.json ./dist/package.json && cd dist && npm install ",
     "zip": "rm -rf ./dist/tests/ && cd dist && rm -rf ./farm.zip && zip -r farm.zip ./",
     "test": "mocha dist/tests/unit/",
     "server": "AWS_ACCESS_KEY_ID=AKIASXZ3APWM7CLXODHH AWS_SECRET_ACCESS_KEY=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 AWS_DEFAULT_REGION=us-west-1 node ./dist/App.js",

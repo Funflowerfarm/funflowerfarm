@@ -8,12 +8,8 @@ Fun Flower Farm is a beautiful blockchain game where you can plant, chop, mine, 
 
 1. Free to play - No Paywall
 2. Community Owned
-3. Open Source
-4. No token premint
+3. [Open Source](/pages/openSource/)
 5. DAO
-
-
-
 
 
 
@@ -32,7 +28,10 @@ To craft an NFT you must plant, harvest, chop, mine, fish and collect all the in
 
 
 ## Tech Stack
-TECHNOLOGY STACK USED TO CREATE THE FUN FLOWER FARM ECOSYSTEM
+1. React
+2. typescript
+3. Polygon
+5. AWS lambda & Duynamo DB
 
 
 

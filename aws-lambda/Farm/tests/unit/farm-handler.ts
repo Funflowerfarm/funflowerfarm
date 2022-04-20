@@ -12,8 +12,8 @@ const repo = require('../../repository');
 const { DateTime } = require("luxon");
 const { default: BigNumber } = require('bignumber.js');
 
-process.env['AWS_ACCESS_KEY_ID'] = 'AKIASXZ3APWM7CLXODHH';
-process.env['AWS_SECRET_ACCESS_KEY'] = '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';
+process.env['AWS_ACCESS_KEY_ID'] = '';
+process.env['AWS_SECRET_ACCESS_KEY'] = '';
 process.env['FFF_TEST'] = 'true';
 
 
