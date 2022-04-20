@@ -12,12 +12,15 @@ For more details, please see the guide - https://funflowerfarm.com/
 
 The Front-end is a Decentralized App (Dapp) that can be found in `src/dapp`.
 
-# How to run?
+# 👶 Getting Started
 
-The dapp is currently pointed at the production backend and to polygon mainnet blockchain. This is a web3 crypto app that is part onchain and part offchain
+The dapp is currently pointed at the production backend and to polygon mainnet blockchain. This is a web3 crypto app that is part on-chain and part off-chain<br>
 
-`yarn`
-`yarn start`
+The easy way to start is to clone this repo, and build the front-end that is pointing to production. You can then make changes in the front and iterate:
+
+1. `npm install --global yarn` (if you don't have yarn installed)
+2. `yarn install`
+3. `yarn dev`
 
 <img width="527" alt="Screen Shot 2021-08-25 at 11 52 24 am" src="https://user-images.githubusercontent.com/11745561/130713259-f87fd1b4-a6f1-4b25-b8b9-4eff6beee9e9.png">
 
