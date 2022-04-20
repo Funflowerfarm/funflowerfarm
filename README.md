@@ -1,22 +1,20 @@
-# Sunflower Farmer
+# Funflower Farm
 
-A blockchain based game where players can play to earn Sunflower Farmer Tokens.
+A blockchain based game where players can play to earn Funflower farm Tokens.
 
-This game is purely experimental and is not recommended to play.
+The game is a fork from sunflower-land game, we want to change the game and improve to make it easy to play for new players avoiding paywalls and also a change in the game design by adding a solid and fun adventure system
 
 # How does it work?
 
-For more details, please see the guide - https://docs.sunflower-farmers.com/
+For more details, please see the guide - https://funflowerfarm.com/
 
 # Code Structure
 
-Smart Contracts can be found in `src/contracts`.
-
-Decentralized App (Dapp) can be found in `src/dapp`.
+The Front-end is a Decentralized App (Dapp) that can be found in `src/dapp`.
 
 # How to run?
 
-The dapp is currently pointed at the production blockchain. You can switch to Polygon testnet and it should pick up the chainID automatically.
+The dapp is currently pointed at the production backend and to polygon mainnet blockchain. This is a web3 crypto app that is part onchain and part offchain
 
 `yarn`
 `yarn start`
@@ -25,9 +23,9 @@ The dapp is currently pointed at the production blockchain. You can switch to Po
 
 # Licensing 
 
-All code is under MIT licensing. We encourage people to improve the Sunflower Metaverse.
+All code is under MIT licensing. We encourage people to improve the Funflower Farm Metaverse.
 
-Please check with the individual designers that you have permissions before using any of the in-game assets sprites. Doing so without permissions is illegal.
+Please check with the individual designers that you have permissions before using any of the in-game assets sprites. Doing so without permissions may be illegal.
 
 We are open source and bootstrapped with zero funds. Hence we have used a base asset pack - https://danieldiggle.itch.io/sunnyside
 
