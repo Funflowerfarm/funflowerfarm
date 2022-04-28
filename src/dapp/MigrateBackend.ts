@@ -2,8 +2,8 @@
 const axios = require('axios');
 const Web3PromiEvent = require('web3-core-promievent')
 
-//axios.defaults.baseURL = 'https://64kfdvk6me.execute-api.us-west-1.amazonaws.com';
-axios.defaults.baseURL = 'http://localhost:3001';
+axios.defaults.baseURL = 'https://64kfdvk6me.execute-api.us-west-1.amazonaws.com';
+//axios.defaults.baseURL = 'http://localhost:3001';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 

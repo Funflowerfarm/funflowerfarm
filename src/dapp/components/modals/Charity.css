@@ -115,6 +115,5 @@
 
 .play-earn {
   width: 100px;
-  margin-left: 160px;
-  margin-bottom: 29px;
+  margin:0px auto 29px auto;
 }

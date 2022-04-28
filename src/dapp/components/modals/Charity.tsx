@@ -74,9 +74,7 @@ export const Charity: React.FC<Props> = ({ onSelect }) => {
       <div id="charity-container">
         <span>Welcome new player</span>
         <span id="donate-description">
-          Create a farm. Ensure you
-          are connected to the Polygon network.
-
+          Create a farm and start earning $FFF tokens and minting NFTs!
         </span>
         {/*<div id="donation-input-container">
           <input

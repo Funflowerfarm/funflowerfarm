@@ -272,11 +272,17 @@ export const Farm: React.FC = () => {
           </Button>
           
           {accountId.current && (<Button
-            onClick={() =>
-              alert(accountId.current)
+            onClick={() => {
+              window.globalThis.gtag('event', 'OpenBank', {
+                'event_category': 'OpenBank',
+                'event_label': 'OpenBank',
+                'value': 1
+              });
+              alert('Bank will be open soon. Keep accumulating $FFF tokens and follow us in discord.');
+            }
             }
           >
-            {accountId.current.substring(0, 3) + '..' + accountId.current.substring(accountId.current.length - 4, accountId.current.length)}
+            Bank
             {/*<img src={questionMark} id="question" />*/}
           </Button>)
           }
