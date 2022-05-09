@@ -2,7 +2,7 @@
 
 A blockchain based game where players can play to earn Funflower farm Tokens.
 
-The game is a fork from [sunflower-land game](https://github.com/sunflower-land/sunflower-land), we want to change the game and improve to make it easy to play for new players avoiding paywalls and also a change in the game design by adding a solid and fun adventure system
+The game is a fork from [sunflower farmers](https://github.com/sunflower-land/sunflower-land/tree/399f5633426b788307b992322d1d157c1a59114d) when the game had MIT licence, we want to change the game and improve to make it easy to play for new players avoiding paywalls and also a change in the game design by adding a solid and fun adventure system
 
 # How does it work?
 
