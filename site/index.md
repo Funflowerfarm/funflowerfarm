@@ -6,10 +6,10 @@ layout: home
 
 Fun Flower Farm is a beautiful blockchain game where you can plant, chop, mine, craft & collect resources and NFTs while earning the $FFF token
 
-1. Free to play - No Paywall
-2. Community Owned
-3. [Open Source](/pages/openSource/)
-5. DAO
+1. [Free to play - No Paywall](/pages/gettingStarted/)
+2. [Tokenomics - $FFF Token](/pages/tokenomics/)
+3. [Community Owned - Open Source](/pages/openSource/)
+4. DAO
 
 
 
@@ -20,7 +20,12 @@ Every item you harvest, gather or craft is own-able on the Polygon Blockchain. T
 
 ## Play, Earn and Craft
 Funflower farmers are on quest to explore the land, collect exotic resources and craft new items. Everything you collect throughout Funflower Farm is identifiable on the Blockchain as either a NFT on Fungible Token.
-To craft an NFT you must plant, harvest, chop, mine, fish and collect all the ingredients needed to craft the NFT. In other words, you must work hard for it!
+To craft an NFT you must plant, harvest, chop, mine, fish and collect all the ingredients needed to craft the NFT. In other words, you must work hard for it!<br>
+The FFF Token contract is in polygon mainnet.<br>
+
+| Token | Address                                    | Action |
+|:-----:|:------------------------------------------:|:-------|
+| $FFF  | [0xECB21349DCfCb48b9Bd51B70A7618E5Fa00d2041](https://polygonscan.com/token/0xecb21349dcfcb48b9bd51b70a7618e5fa00d2041) | [BUY](https://info.quickswap.exchange/#/token/0xecb21349dcfcb48b9bd51b70a7618e5fa00d2041) |
 
 ## Play and start earning $FFF!
 
