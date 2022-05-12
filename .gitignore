@@ -30,3 +30,5 @@ build
 # buidler
 artifacts
 cache
+
+.vscode
